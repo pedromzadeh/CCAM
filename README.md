@@ -1,2 +1,2 @@
 # collider
-The Collider package simulated two-body cell collisions within the phase-field framework.
+The Collider package simulate two-body cell collisions within the phase-field framework.

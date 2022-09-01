@@ -1,0 +1,7 @@
+collider.egg-info/
+.vscode
+*__pycache__/
+output/
+configs/grid_id*
+examples/
+driver/*.out

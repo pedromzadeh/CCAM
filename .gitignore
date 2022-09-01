@@ -1,0 +1,5 @@
+collider.egg-info/
+data/
+visuals/temp
+src/__pycache__/
+visuals/__pycache__/

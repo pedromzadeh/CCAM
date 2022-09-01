@@ -1,0 +1,14 @@
+id : 1
+R_eq : 3.5 
+R_init : 4
+center : 
+ - 40
+ - 9
+gamma : 1.46 
+A : 0.48 
+g : 50 
+beta : 5 
+D : 0.001 
+J : 3
+lam : 0.8
+polarity_mode : "SVA"

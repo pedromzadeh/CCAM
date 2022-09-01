@@ -1,0 +1,9 @@
+N : 5000             # total simulation time
+dt : 0.002            # time step
+N_mesh : 200          # lattice grid size
+L_box : 50            # size of simulation box in real units
+kappa : 1             # strength of cell-cell repulsion
+omega : 60            # strength of cell-cell adhesion
+mu : 1000             # strength of area conservation
+eta : 0.5             # friction coefficient
+N_wetting : 500       # time for which cells are pushed down to wet on substrate

@@ -4,6 +4,7 @@ from skimage import measure
 import numpy as np
 import pandas as pd
 
+
 def find_contour(field, level=0.5):
     """
     Computes the contour at the specified level.
@@ -23,6 +24,7 @@ def find_contour(field, level=0.5):
     """
     return measure.find_contours(field, level=level)
 
+
 def compute_CM(cell):
     """
     Computes the center of mass of cell.
@@ -40,11 +42,12 @@ def compute_CM(cell):
     N_mesh, dx = cell.simbox.N_mesh, cell.simbox.dx
     x = np.arange(0, N_mesh, 1)
     xg, yg = np.meshgrid(x, x)
-    cm_x, cm_y = np.sum(xg * cell.phi), np.sum(yg*cell.phi)
+    cm_x, cm_y = np.sum(xg * cell.phi), np.sum(yg * cell.phi)
     norm = np.sum(cell.phi)
 
-    return cell.cm[0], np.array([cm_x/norm * dx, cm_y/norm * dx])
-   
+    return cell.cm[1], np.array([cm_x / norm * dx, cm_y / norm * dx])
+
+
 def compute_v_CM(cell):
     """
     Computes the center of mass velocity.
@@ -60,6 +63,7 @@ def compute_v_CM(cell):
     """
     delta_cm = np.diff(cell.cm, axis=0)[0]
     return delta_cm / cell.simbox.dt
+
 
 def compute_area(cell, order=2):
     """
@@ -78,6 +82,7 @@ def compute_area(cell, order=2):
     float
     """
     return np.sum(np.power(cell.phi, order) * cell.simbox.dx**2)
+
 
 def compute_gradients(field, dx):
     """
@@ -103,13 +108,14 @@ def compute_gradients(field, dx):
     field_down = np.roll(field, 1, axis=0)
 
     # compute the gradients, each component is separate
-    grad_x = (field_left - field_right) / (2*dx)
-    grad_y = (field_up - field_down) / (2*dx)
+    grad_x = (field_left - field_right) / (2 * dx)
+    grad_y = (field_up - field_down) / (2 * dx)
 
     # compute laplacian
-    laplacian = (field_left + field_right + field_up + field_down - 4*field) / dx**2
+    laplacian = (field_left + field_right + field_up + field_down - 4 * field) / dx**2
 
     return (grad_x, grad_y, laplacian)
+
 
 def compute_contact_angle(cell):
     """
@@ -119,11 +125,11 @@ def compute_contact_angle(cell):
     ----------
     cell : Cell object
         The cell in question.
-    
+
     Returns
     -------
     float
-    
+
     Raises
     ------
     ValueError
@@ -146,64 +152,67 @@ def compute_contact_angle(cell):
     #   --> find the indices of these two x values
     #           - Contour points are given from top and go counter clockwise. If
     #             there are multiple y values with same xmin, len(ind_xmin) > 1.
-    #             Due to CCW nature, the last index is associated with ymin. 
-    x, y = cell.contour[0][:,1], cell.contour[0][:,0]
+    #             Due to CCW nature, the last index is associated with ymin.
+    x, y = cell.contour[0][:, 1], cell.contour[0][:, 0]
     buffer = 1
     ymin = np.min(y)
-    y_slice = np.where((y >= ymin) & (y <= ymin+buffer))[0]
+    y_slice = np.where((y >= ymin) & (y <= ymin + buffer))[0]
     xmin, xmax = np.min(x[y_slice]), np.max(x[y_slice])
-    ind_xmin, ind_xmax = np.where(x==xmin)[0], np.where(x==xmax)[0][0]
-    ind_xmin = ind_xmin[len(ind_xmin)-1]
+    ind_xmin, ind_xmax = np.where(x == xmin)[0], np.where(x == xmax)[0][0]
+    ind_xmin = ind_xmin[len(ind_xmin) - 1]
 
     # if phi is at the border, return nan
-    if xmin < 1 or xmax > cell.simbox.N_mesh-1:
+    if xmin < 1 or xmax > cell.simbox.N_mesh - 1:
         return None
 
     # left -> right, contact angle is on the right side
     if cell.id == 0:
-        x1, x2 = x[ind_xmax+4], x[ind_xmax+10]
-        y1, y2 = y[ind_xmax+4], y[ind_xmax+10]
-        
+        x1, x2 = x[ind_xmax + 4], x[ind_xmax + 10]
+        y1, y2 = y[ind_xmax + 4], y[ind_xmax + 10]
+
         try:
             m = (y2 - y1) / (x2 - x1)
-            ca = np.arctan(m) * 180/np.pi
+            ca = np.arctan(-m) * 180 / np.pi
         except ZeroDivisionError:
-            ca = np.arctan(np.inf) * 180/np.pi
-        
+            ca = np.arctan(np.inf) * 180 / np.pi
+
         return ca
 
     # right -> left, contact angle is on the left side
     elif cell.id == 1:
-        x1, x2 = x[ind_xmax-10], x[ind_xmax-4]
-        y1, y2 = y[ind_xmax-10], y[ind_xmax-4]
-        
+        x1, x2 = x[ind_xmin - 10], x[ind_xmin - 4]
+        y1, y2 = y[ind_xmin - 10], y[ind_xmin - 4]
+
         try:
             m = (y2 - y1) / (x2 - x1)
-            ca = np.arctan(m) * 180/np.pi
+            ca = np.arctan(m) * 180 / np.pi
         except ZeroDivisionError:
-            ca = np.arctan(np.inf) * 180/np.pi
+            ca = np.arctan(np.inf) * 180 / np.pi
 
         return ca
 
     else:
-        raise ValueError("This method only works for two-body cells. Check to make sure only 2 cells exist in the system. Also, read the assumptions carefully.")
+        raise ValueError(
+            "This method only works for two-body cells. Check to make sure only 2 cells exist in the system. Also, read the assumptions carefully."
+        )
+
 
 def collect_stats(cells, table=None):
     """
     Measures various statistics about the cells and appends it as a new row to the ongoing table of measurements.
-    
+
     Parameters
     ----------
     cells : list of Cell objects
         All cells in the system.
-    
+
     table : pd.DataFrame, optional
         The running table holding data, by default None
-    
+
     Returns
     -------
     pd.DataFrame
-        Table of data with the new measurements added as rows. The columns are 
+        Table of data with the new measurements added as rows. The columns are
         ['cell id',
         'lambda',
         'gamma',
@@ -226,35 +235,49 @@ def collect_stats(cells, table=None):
         simbox = cell.simbox
 
         cell_df = pd.DataFrame(
-            data=[[
-                cell.id, cell.lam, cell.gamma, cell.A, cell.beta,
-                cell.cm[1][0], cell.cm[1][1], cell.theta,
-                v, ca, cell.r_CR[0], cell.r_CR[1],
-                simbox.N_mesh, simbox.L_box, simbox.dt
-            ]],
+            data=[
+                [
+                    cell.id,
+                    cell.lam,
+                    cell.gamma,
+                    cell.A,
+                    cell.beta,
+                    cell.cm[1][0],
+                    cell.cm[1][1],
+                    cell.theta,
+                    v,
+                    ca,
+                    cell.r_CR[0],
+                    cell.r_CR[1],
+                    simbox.N_mesh,
+                    simbox.L_box,
+                    simbox.dt,
+                ]
+            ],
             columns=[
-                'cell id',
-                'lambda',
-                'gamma',
-                'A',
-                'beta',
-                'x_CM',
-                'y_CM',
-                'polarity angle',
-                'CM speed',
-                'contact angle',
-                'x_rCR',
-                'y_rCR',
-                'N_mesh',
-                'L_box',
-                'dt'
-            ]
+                "cell id",
+                "lambda",
+                "gamma",
+                "A",
+                "beta",
+                "x_CM",
+                "y_CM",
+                "polarity angle",
+                "CM speed",
+                "contact angle",
+                "x_rCR",
+                "y_rCR",
+                "N_mesh",
+                "L_box",
+                "dt",
+            ],
         )
         table = pd.concat([table, cell_df])
-        
+
     return table
 
-def evolve_cell(cell, cells, force, force_modality, chi, eta, n_collision):
+
+def evolve_cell(cell, cells, force, force_modality, chi, n_collision, n):
     """
     Evolves the cell by updating its class variables from time t to time t_dt. Attributes updated are
     1. field
@@ -263,27 +286,24 @@ def evolve_cell(cell, cells, force, force_modality, chi, eta, n_collision):
     4. center of mass speed
     5. velocity fields, v_x and v_y
     6. contour of the field.
-    
+
     Parameters
     ----------
     cell : Cell object
         Cell of interest to update.
-    
+
     cells : list of Cell objects
         All cells in system.
-    
+
     force : Force object
         Gives access to computing forces.
 
     force_modality : str
         Specifies what kind of active force the cell generates, options are 'constant' and 'actin-poly'.
-    
+
     chi : Substrate object
         Specifies the substrate.
-    
-    eta : float
-        Friction coefficient.
-    
+
     n_collision : int
         Specifies whether a collision has taken place. Used in FFCR polarity.
     """
@@ -292,31 +312,37 @@ def evolve_cell(cell, cells, force, force_modality, chi, eta, n_collision):
     grad_x, grad_y, _ = compute_gradients(cell.phi, cell.simbox.dx)
     grad_phi = np.array([grad_x, grad_y])
     x_hat = [1, 0]
+    eta = cells[0].eta
 
     # phi_(n+1)
-    phi_i_next, dF_dphi = _update_field(cell, cells, grad_phi, force)
+    phi_i_next, dF_dphi = _update_field(cell, cells, grad_phi, force, n)
 
     # theta_(n+1)
-    theta_i_next = cell.theta + polarity.FFCR(
-                                    cells,
-                                    cell.id,
-                                    x_hat, 
-                                    n_collision,
-                                )
+    if cell.polarity_mode == "SVA":
+        theta_i_next = cell.theta + polarity.static_velocity_aligning(cell, tau=3)
+
+    elif cell.polarity_mode == "DVA":
+        theta_i_next = cell.theta + polarity.dynamic_velocity_aligning(cell)
+
+    elif cell.polarity_mode == "FFCR":
+        theta_i_next = cell.theta + polarity.FFCR(
+            cells,
+            cell.id,
+            x_hat,
+            n_collision,
+        )
 
     # compute motility forces at time n
-    if force_modality == 'actin-poly':
-        fx_motil, fy_motil = force.actin_motility_force(
-                                cell,
-                                chi,
-                                grad_phi,
-                                x_hat)
-    elif force_modality == 'constant':
+    if force_modality == "actin-poly":
+        fx_motil, fy_motil = force.actin_motility_force(cell, chi, grad_phi, x_hat)
+    elif force_modality == "constant":
         fx_motil, fy_motil = force.constant_motility_force(cell, alpha=0.1)
 
     else:
-        warnings.warn(f"force_modality == {force_modality} is not understood. Defaulting to fx_motil = 0, fy_motil = 0... BE AWARE!")
-        fx_motil, fy_motil = 0., 0.
+        warnings.warn(
+            f"force_modality == {force_modality} is not understood. Defaulting to fx_motil = 0, fy_motil = 0... BE AWARE!"
+        )
+        fx_motil, fy_motil = 0.0, 0.0
 
     # compute thermodynamic forces at time n
     fx_thermo = dF_dphi * grad_x
@@ -331,7 +357,8 @@ def evolve_cell(cell, cells, force, force_modality, chi, eta, n_collision):
     cell.vy = (fy_thermo + fy_motil) / eta
     cell.contour = find_contour(cell.phi)
 
-def _update_field(cell, cells, grad_phi, force):
+
+def _update_field(cell, cells, grad_phi, force, n):
 
     # obtain relevant variables at time n
     dt = cell.simbox.dt
@@ -340,8 +367,8 @@ def _update_field(cell, cells, grad_phi, force):
     vy_i = cell.vy
 
     # compute equation of motion at time n
-    dF_dphi = force.total_func_deriv(cell, cells)
+    dF_dphi = force.total_func_deriv(cell, cells, n)
     grad_x, grad_y = grad_phi
-    v_dot_gradphi = vx_i*grad_x + vy_i*grad_y
+    v_dot_gradphi = vx_i * grad_x + vy_i * grad_y
 
     return phi_i - dt * (dF_dphi + v_dot_gradphi), dF_dphi

@@ -1,10 +1,12 @@
-from src import utils
+from helper_functions import helper_functions as hf
 import numpy as np
 import yaml
 
-class Cell():
+
+class Cell:
     """
-    The Cell class defines a phase-field cell and implements methods to update the cell's field from one timestep to the next.
+    The Cell class defines a phase-field cell and implements methods to update
+    the cell's field from one timestep to the next.
 
     Attributes
     ----------
@@ -16,6 +18,9 @@ class Cell():
 
     self.R_init : float
         Specifies the initial radius for building the cell.
+
+    self.N_wetting : int
+        Total time cell accelerates down to wet on substrate.
 
     self.center : list of floats
         Specifies the centroid of the cell when building it.
@@ -41,6 +46,9 @@ class Cell():
     self.lam : float
         Specifies the phase field interfacial thickness.
 
+    self.eta : float
+        Cell's friction coefficient.
+
     self.polarity_mode : str
         Specifies the modality used to update the cell's polarity.
 
@@ -51,11 +59,12 @@ class Cell():
         Cumulative substrate the cell sees and interacts with.
 
     self.contour : list of ndarray, of shape (m, 2)
-        The x, y points defining the half-contour of the field, where m is the number of such points.
-    
+        The x, y points defining the half-contour of the field, where m is the
+        number of such points.
+
     self.cm : ndarray of shape (2, 2)
         Rows are previous and current CM, respectively, with ordering (x, y).
-    
+
     self.theta : float
         Defines cell polarity direction.
 
@@ -70,7 +79,7 @@ class Cell():
 
     self.simbox : SimulationBox object
         Directly gives each cell access to simulation box parameters.
-        
+
     Methods
     -------
     __init__(self, config_file)
@@ -88,8 +97,9 @@ class Cell():
 
     def __init__(self, config_file, _sim_box_obj):
         """
-        Initializes the cell object with some hypterparameters and physical and spatial features.
-        
+        Initializes the cell object with some hypterparameters and physical and
+        spatial features.
+
         Parameters
         ----------
         config_file : str
@@ -105,7 +115,7 @@ class Cell():
         # spatial features of the cell
         self.phi = self._create()
         self.W = None
-        self.contour = utils.find_contour(self.phi)
+        self.contour = hf.find_contour(self.phi)
         self.cm = np.array([self.center, self.center])
 
         # physical features of the cell
@@ -125,26 +135,28 @@ class Cell():
         epsilon = 1
         one_dim = np.arange(0, N_mesh, 1)
         x, y = np.meshgrid(one_dim, one_dim)
-        r = np.sqrt((center[1] - y*dx)**2 + (center[0] - x*dx)**2)
-        phi[y,x] = self._tanh(r, R, epsilon)
+        r = np.sqrt((center[1] - y * dx) ** 2 + (center[0] - x * dx) ** 2)
+        phi[y, x] = self._tanh(r, R, epsilon)
         return phi
 
     def _tanh(self, r, R, epsilon):
-        return 1/2 + 1/2 * np.tanh(-(r-R)/epsilon)
+        return 1 / 2 + 1 / 2 * np.tanh(-(r - R) / epsilon)
 
     def _load_parameters(self, path):
-        with open(path, 'r') as file:
-            cell_params = yaml.safe_load(file)
+        with open(path, "r") as file:
+            config = yaml.safe_load(file)
 
-        self.id = cell_params['id']
-        self.R_eq = cell_params['R_eq']
-        self.R_init = cell_params['R_init']
-        self.center = cell_params['center']
-        self.gamma = cell_params['gamma']
-        self.A = cell_params['A']
-        self.g = cell_params['g']
-        self.beta = cell_params['beta']
-        self.D = cell_params['D']
-        self.J = cell_params['J']
-        self.lam = cell_params['lam']
-        self.polarity_mode = cell_params['polarity_mode']
+        self.id = config["id"]
+        self.R_eq = config["R_eq"]
+        self.R_init = config["R_init"]
+        self.center = config["center"]
+        self.gamma = config["gamma"]
+        self.A = config["A"]
+        self.g = config["g"]
+        self.beta = config["beta"]
+        self.D = config["D"]
+        self.J = config["J"]
+        self.lam = config["lam"]
+        self.polarity_mode = config["polarity_mode"]
+        self.N_wetting = config["N_wetting"]
+        self.eta = config["eta"]

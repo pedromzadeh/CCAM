@@ -1,5 +1,6 @@
 collider.egg-info/
-data/
-visuals/temp
-src/__pycache__/
-visuals/__pycache__/
+.vscode
+*__pycache__/
+output/
+configs/grid_id*
+examples/

@@ -131,7 +131,7 @@ class Force:
 
         return 4 * self.kappa / cell.lam * cell.phi * neighbors_present
 
-    def total_func_deriv(self, cell, cells, n):
+    def total_func_deriv(self, cell, cells):
         """
         Computes the total functional derivative of the cell w.r.t field phi.
 

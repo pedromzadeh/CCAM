@@ -20,7 +20,8 @@ def find_contour(field, level=0.5):
     Returns
     -------
     list of ndarray of shape (m, 2)
-        m is the number of points, and the ordering is (y, x). More than one element in the list suggests disjointed sets of contour points.
+        m is the number of points, and the ordering is (y, x). More than one
+        element in the list suggests disjointed sets of contour points.
     """
     return measure.find_contours(field, level=level)
 
@@ -67,7 +68,7 @@ def compute_v_CM(cell):
 
 def compute_area(cell, order=2):
     """
-    Computes the approximate area of the cell as $\int phi^(order) dr$.
+    Computes the approximate area of the cell as $int phi^(order) dr$.
 
     Parameters
     ----------
@@ -75,7 +76,8 @@ def compute_area(cell, order=2):
         Cell in question.
 
     order : int, optional
-        Specifies the power of phi. Larger values give smaller areas as field is tightened, by default 2
+        Specifies the power of phi. Larger values give smaller areas as field
+        is tightened, by default 2
 
     Returns
     -------
@@ -119,7 +121,8 @@ def compute_gradients(field, dx):
 
 def compute_contact_angle(cell):
     """
-    Computes the approximate contact angle between the cell front and the substrate, in degrees.
+    Computes the approximate contact angle between the cell front and the
+    substrate, in degrees.
 
     Parameters
     ----------
@@ -139,7 +142,8 @@ def compute_contact_angle(cell):
     -----
     There are two strict assumptions that have to be met:
     1. The entire cell is in one frame and contour set is not disjoint
-    2. There are only 2 cells, IDed 0 and 1. Cell 0 travels from left to right, and cell 1 travels from right to left.
+    2. There are only 2 cells, IDed 0 and 1. Cell 0 travels from left to right,
+    and cell 1 travels from right to left.
     """
     # checks the two assumptions
     assert cell.id < 2
@@ -160,6 +164,7 @@ def compute_contact_angle(cell):
     xmin, xmax = np.min(x[y_slice]), np.max(x[y_slice])
     ind_xmin, ind_xmax = np.where(x == xmin)[0], np.where(x == xmax)[0][0]
     ind_xmin = ind_xmin[len(ind_xmin) - 1]
+    eps = 10e-8
 
     # if phi is at the border, return nan
     if xmin < 1 or xmax > cell.simbox.N_mesh - 1:
@@ -170,11 +175,8 @@ def compute_contact_angle(cell):
         x1, x2 = x[ind_xmax + 4], x[ind_xmax + 10]
         y1, y2 = y[ind_xmax + 4], y[ind_xmax + 10]
 
-        try:
-            m = (y2 - y1) / (x2 - x1)
-            ca = np.arctan(-m) * 180 / np.pi
-        except ZeroDivisionError:
-            ca = np.arctan(np.inf) * 180 / np.pi
+        m = (y2 - y1) / (x2 - x1 + eps)
+        ca = np.arctan(-m) * 180 / np.pi
 
         return ca
 
@@ -183,23 +185,22 @@ def compute_contact_angle(cell):
         x1, x2 = x[ind_xmin - 10], x[ind_xmin - 4]
         y1, y2 = y[ind_xmin - 10], y[ind_xmin - 4]
 
-        try:
-            m = (y2 - y1) / (x2 - x1)
-            ca = np.arctan(m) * 180 / np.pi
-        except ZeroDivisionError:
-            ca = np.arctan(np.inf) * 180 / np.pi
+        m = (y2 - y1) / (x2 - x1 + eps)
+        ca = np.arctan(m) * 180 / np.pi
 
         return ca
 
     else:
         raise ValueError(
-            "This method only works for two-body cells. Check to make sure only 2 cells exist in the system. Also, read the assumptions carefully."
+            "This method only works for two-body cells. Check to make sure only \
+                2 cells exist in the system. Also, read the assumptions carefully."
         )
 
 
 def collect_stats(cells, table=None):
     """
-    Measures various statistics about the cells and appends it as a new row to the ongoing table of measurements.
+    Measures various statistics about the cells and appends it as a new row to
+    the ongoing table of measurements.
 
     Parameters
     ----------
@@ -277,9 +278,10 @@ def collect_stats(cells, table=None):
     return table
 
 
-def evolve_cell(cell, cells, force, force_modality, chi, n_collision, n):
+def evolve_cell(cell, cells, force, force_modality, chi, n_collision):
     """
-    Evolves the cell by updating its class variables from time t to time t_dt. Attributes updated are
+    Evolves the cell by updating its class variables from time t to time t_dt.
+    Attributes updated are
     1. field
     2. polarity
     3. center of mass
@@ -299,7 +301,8 @@ def evolve_cell(cell, cells, force, force_modality, chi, n_collision, n):
         Gives access to computing forces.
 
     force_modality : str
-        Specifies what kind of active force the cell generates, options are 'constant' and 'actin-poly'.
+        Specifies what kind of active force the cell generates, options are
+        'constant' and 'actin-poly'.
 
     chi : Substrate object
         Specifies the substrate.
@@ -315,7 +318,7 @@ def evolve_cell(cell, cells, force, force_modality, chi, n_collision, n):
     eta = cells[0].eta
 
     # phi_(n+1)
-    phi_i_next, dF_dphi = _update_field(cell, cells, grad_phi, force, n)
+    phi_i_next, dF_dphi = _update_field(cell, cells, grad_phi, force)
 
     # theta_(n+1)
     if cell.polarity_mode == "SVA":
@@ -340,7 +343,8 @@ def evolve_cell(cell, cells, force, force_modality, chi, n_collision, n):
 
     else:
         warnings.warn(
-            f"force_modality == {force_modality} is not understood. Defaulting to fx_motil = 0, fy_motil = 0... BE AWARE!"
+            f"force_modality == {force_modality} is not understood. \
+                Defaulting to fx_motil = 0, fy_motil = 0... BE AWARE!"
         )
         fx_motil, fy_motil = 0.0, 0.0
 
@@ -358,7 +362,7 @@ def evolve_cell(cell, cells, force, force_modality, chi, n_collision, n):
     cell.contour = find_contour(cell.phi)
 
 
-def _update_field(cell, cells, grad_phi, force, n):
+def _update_field(cell, cells, grad_phi, force):
 
     # obtain relevant variables at time n
     dt = cell.simbox.dt
@@ -367,7 +371,7 @@ def _update_field(cell, cells, grad_phi, force, n):
     vy_i = cell.vy
 
     # compute equation of motion at time n
-    dF_dphi = force.total_func_deriv(cell, cells, n)
+    dF_dphi = force.total_func_deriv(cell, cells)
     grad_x, grad_y = grad_phi
     v_dot_gradphi = vx_i * grad_x + vy_i * grad_y
 

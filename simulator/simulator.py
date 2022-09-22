@@ -91,7 +91,7 @@ class Simulator:
             if self._inside_simbox(cells):
 
                 # collect statistics
-                if n % 500 == 0 and n > cells[0].N_wetting + 1000:
+                if n % 500 == 0 and n > cells[0].N_wetting + 1000 and n_coll == -1:
                     stats_df = hf.collect_stats(cells, table=stats_df)
 
                 # view the simulation box
@@ -122,7 +122,7 @@ class Simulator:
                 # update each cell to the next time step
                 [
                     hf.evolve_cell(
-                        cell, cells, force_calculator, force_modality, chi, n_coll, n
+                        cell, cells, force_calculator, force_modality, chi, n_coll
                     )
                     for cell in cells
                 ]

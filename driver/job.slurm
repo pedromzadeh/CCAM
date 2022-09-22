@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --account=bcamley1
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=48
 #SBATCH --mail-type=end
 #SBATCH --mail-user=zadeh@jhu.edu
 #SBATCH --time=5:00:00

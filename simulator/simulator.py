@@ -95,7 +95,7 @@ class Simulator:
                     stats_df = hf.collect_stats(cells, table=stats_df)
 
                 # view the simulation box
-                if n % 100 == 0:  # and n > cells[0].N_wetting + 1000:
+                if n % 20000 == 0 and n > cells[0].N_wetting + 1000:
                     Figure.view_simbox(
                         cells,
                         chi,

@@ -4,3 +4,4 @@ collider.egg-info/
 output/
 configs/grid_id*
 examples/
+driver/*.out

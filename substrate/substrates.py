@@ -30,6 +30,9 @@ class Substrate:
     _rectangular(self, x, y)
         Returns a rectangular confinement.
 
+    _line(self, y, yB=5)
+        Returns a floor confinement at yB.
+
     _circular(self, x, y)
         Returns a circular confinement.
 
@@ -102,8 +105,6 @@ class Substrate:
     def _rectangular(self, x, y):
         """rectangular confinement"""
         # controls inteface width of wall
-        N_mesh, L_box = self.N_mesh, self.L_box
-        dx = L_box / (N_mesh - 1)
         eps = self.xi
         xL, xR = 5.5, 48
         yB, yT = 5, 30
@@ -112,17 +113,23 @@ class Substrate:
         chi = 0.5 * (1 - np.tanh((y - yB) / eps))
 
         # a rectangular sub
-        # chi_y = 0.5*((1-np.tanh((y-yB)/eps))+(1+np.tanh((y-yT)/eps)))
-        # chi_x = 0.5*((1-np.tanh((x-xL)/eps))+(1+np.tanh((x-xR)/eps)))
-        # chi = chi_x + chi_y
+        chi_y = 0.5 * ((1 - np.tanh((y - yB) / eps)) + (1 + np.tanh((y - yT) / eps)))
+        chi_x = 0.5 * ((1 - np.tanh((x - xL) / eps)) + (1 + np.tanh((x - xR) / eps)))
+        chi = chi_x + chi_y
 
         return chi
 
+    def _line(self, y, yB=5):
+        """floor confinement"""
+
+        # controls inteface width of wall
+        eps = self.xi
+        return 0.5 * (1 - np.tanh((y - yB) / eps))
+
     def _circular(self, x, y):
         """circular confinement"""
-        N_mesh, L_box = self.N_mesh, self.L_box
+        L_box = self.L_box
         Rl, Rs = 18, 10
-        dx = L_box / (N_mesh - 1)
         x_center, y_center = L_box / 2, L_box / 2
         a, b, c = 1, 1, 1
         x = x - x_center
@@ -137,9 +144,7 @@ class Substrate:
         return chi
 
     def _Y(self, x, y):
-        """Y substrate: very small J is needed to get high persistence so cells can pass through Y"""
-        N_mesh, L_box = self.N_mesh, self.L_box
-        dx = L_box / (N_mesh - 1)
+        """Y substrate"""
         width = 3
         eps = 0.5
         x = x - 25
@@ -175,7 +180,6 @@ class Substrate:
 
     def _plus(self, x, y):
         """+ substrate"""
-        N_mesh, L_box = self.N_mesh, self.L_box
         width = 3
         eps = 0.5
         x = x - 25

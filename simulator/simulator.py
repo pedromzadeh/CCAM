@@ -170,7 +170,7 @@ class Simulator:
         sub = Substrate(N_mesh, L_box)
         arr = np.linspace(0, L_box, N_mesh)
         x, y = np.meshgrid(arr, arr)
-        chi = sub.get_substrate(x, y, type="rectangular")
+        chi = sub.get_substrate(x, y, type="floor")
 
         # read cell config files && ensure only 2 exist
         # IMPORTANT -- glob returns arbitrary order, sort
@@ -183,7 +183,7 @@ class Simulator:
         cells = []
         for config in config_files:
             cell = Cell(config, simbox)
-            chi_yB = sub.get_substrate(x, y + cell.lam, type="rectangular")
+            chi_yB = sub.get_substrate(x, y + cell.lam, type="floor")
             cell.W = (
                 -36 * cell.A / sub.xi * chi**2 * (1 - chi) ** 2
                 + 0.5 * cell.g * chi_yB

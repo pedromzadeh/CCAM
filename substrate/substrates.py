@@ -70,6 +70,8 @@ class Substrate:
         """
         Returns the confinement's phase-field.
 
+        Note that '_floor' is by default set at yB = 5.
+
         Parameters
         ----------
         x : ndarray of shape (N_mesh, N_mesh)
@@ -93,6 +95,8 @@ class Substrate:
         """
         if type == "rectangular":
             return self._rectangular(x, y)
+        elif type == "floor":
+            return self._line(y)
         elif type == "circular":
             return self._circular(x, y)
         elif type == "Y":

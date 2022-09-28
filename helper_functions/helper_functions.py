@@ -322,7 +322,7 @@ def evolve_cell(cell, cells, force, force_modality, chi, n_collision):
 
     # theta_(n+1)
     if cell.polarity_mode == "SVA":
-        theta_i_next = cell.theta + polarity.static_velocity_aligning(cell, tau=3)
+        theta_i_next = cell.theta + polarity.static_velocity_aligning(cell)
 
     elif cell.polarity_mode == "DVA":
         theta_i_next = cell.theta + polarity.dynamic_velocity_aligning(cell)

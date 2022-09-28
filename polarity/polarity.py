@@ -31,7 +31,7 @@ def dynamic_velocity_aligning(cell):
     return -(1 / tau) * gamma * dt + np.sqrt(D * dt) * np.random.randn()
 
 
-def static_velocity_aligning(cell, tau):
+def static_velocity_aligning(cell, tau=3.0):
     """
     Computes the change in polarity angle at the next time step according to
     the velocity-aligning model, where the timescale of alignment is constant.
@@ -42,7 +42,7 @@ def static_velocity_aligning(cell, tau):
         The cell whose polarity we want to update.
 
     tau : float
-        The timescale over which alignment takes place.
+        The timescale for velocity alignment, by default 3.
 
     Returns
     -------
@@ -61,7 +61,7 @@ def static_velocity_aligning(cell, tau):
     return -(1 / tau) * gamma * dt + np.sqrt(D * dt) * np.random.randn()
 
 
-def FFCR(cells, i, t, n_collision):
+def FFCR(cells, i, t, n_collision, tau_CR=1.5, tau_CG=3.0):
     """
     Computes the change in polarity of the cell for the next time step as
     governed by the front-front contact repolarization mechanism.
@@ -80,15 +80,18 @@ def FFCR(cells, i, t, n_collision):
     n_collision : int
         Specifies whether collision has happened.
 
+    tau_CR : float
+        Specifies the timescale for contact repolarization, by default 1.5.
+        Note this should be 0.5 * tau_CG to enable repolarization.
+
+    tau_CG : float
+        Specifies the timescale for contact guidance, by default 3.
+
     Returns
     -------
     float
         Change incurred in polarity during one time step.
     """
-    # set timescales
-    tau_CR = 3
-    tau_CG = 2 * tau_CR
-
     # unpack values
     j = 1 if (i == 0) else 0
     cm = cells[i].cm[1]

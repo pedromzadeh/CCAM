@@ -80,7 +80,7 @@ class Simulator:
             contact repolarization.
         """
         # define various paths
-        paths = self._define_paths(run_id, grid_id)
+        paths = self._define_paths(run_id, grid_id, polarity_type)
 
         print(f"Run ID = {run_id}")
 

@@ -40,7 +40,7 @@ for id in range(len(varied_cell_tuples)):
             D=0.01,
             J=3,
             lam=0.8,
-            polarity_mode="DVA",
+            polarity_mode="SVA",
         )
 
         with open(os.path.join(path, f"cell{cell_id}.yaml"), "w") as yfile:

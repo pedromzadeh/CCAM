@@ -62,8 +62,23 @@ class Simulator:
     def __init__(self):
         self.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    def execute(self, run_id, grid_id):
+    def execute(self, run_id, grid_id, polarity_type):
+        """
+        Executes one complete simulation run colliding two cells head-on.
 
+        Parameters
+        ----------
+        run_id : int
+            Defines the id of this particular run.
+
+        grid_id : int
+            Defines the id of the grid point in the 3D feature space.
+
+        polarity_type : str
+            Specifies the polarity type being used. Options are "SVA"
+            for static velocity-alignment, and "FFCR" for front-front
+            contact repolarization.
+        """
         # define various paths
         paths = self._define_paths(run_id, grid_id)
 
@@ -360,16 +375,25 @@ class Simulator:
         else:
             return "unknown"
 
-    def _define_paths(self, run_id, grid_id):
+    def _define_paths(self, run_id, grid_id, polarity_type):
         SIMBOX_CONFIG = os.path.join(self.root_dir, "configs/simbox.yaml")
         ENERGY_CONFIG = os.path.join(self.root_dir, "configs/energy.yaml")
 
-        CELLS_CONFIG = os.path.join(self.root_dir, f"configs/grid_id{grid_id}")
+        if polarity_type not in ["SVA", "FFCR"]:
+            raise KeyError(f"Polarity mode {polarity_type} is invalid.")
+
+        CELLS_CONFIG = os.path.join(
+            self.root_dir, f"configs/{polarity_type}/grid_id{grid_id}"
+        )
         assert os.path.exists(CELLS_CONFIG)
         assert os.path.isdir(CELLS_CONFIG)
 
         run_root = os.path.join(
-            self.root_dir, "output", f"grid_id{grid_id}", f"run_{run_id}"
+            self.root_dir,
+            "output",
+            f"{polarity_type}",
+            f"grid_id{grid_id}",
+            f"run_{run_id}",
         )
         if not os.path.exists(run_root):
             os.makedirs(run_root)

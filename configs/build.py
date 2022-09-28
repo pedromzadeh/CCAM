@@ -1,6 +1,9 @@
+import sys
 import numpy as np
 import yaml
 import os
+
+pol_type = sys.argv[1]
 
 betas = np.linspace(4, 10, 6)
 gammas = np.linspace(0.9, 1.8, 7)
@@ -16,7 +19,7 @@ print(f"speed: {betas} \ngamma: {gammas}\nsubA: {As}\n")
 print(f"Total # of runs: {SIZE}")
 
 tuples = [default_cell_tuples, varied_cell_tuples]
-root = os.path.dirname(os.path.abspath(__file__))
+root = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{pol_type}")
 centers = [[6, 9], [43, 9]]
 
 for id in range(len(varied_cell_tuples)):
@@ -40,7 +43,7 @@ for id in range(len(varied_cell_tuples)):
             D=0.01,
             J=3,
             lam=0.8,
-            polarity_mode="SVA",
+            polarity_mode=str(pol_type).upper(),
         )
 
         with open(os.path.join(path, f"cell{cell_id}.yaml"), "w") as yfile:

@@ -2,3 +2,5 @@ N: 200000 # total simulation time
 dt: 0.002 # time step
 N_mesh: 200 # lattice grid size
 L_box: 50 # size of simulation box in real units
+stat_collection_freq: 500 # frequency of collecting pre-collision stats
+simbox_view_freq: 10000 # frequency of outputting the view of simbox

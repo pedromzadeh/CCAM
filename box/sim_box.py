@@ -20,13 +20,10 @@ class SimulationBox:
         # read simulation box parameters
         with open(config_file, "r") as file:
             config = yaml.safe_load(file)
-        N = config["N"]
-        dt = config["dt"]
-        N_mesh = config["N_mesh"]
-        L_box = config["L_box"]
-
-        self.sim_time = N
-        self.dt = dt
-        self.N_mesh = N_mesh
-        self.L_box = L_box
-        self.dx = L_box / (N_mesh - 1)
+        self.sim_time = config["N"]
+        self.dt = config["dt"]
+        self.N_mesh = config["N_mesh"]
+        self.L_box = config["L_box"]
+        self.n_stats = config["stat_collection_freq"]
+        self.n_view = config["simbox_view_freq"]
+        self.dx = self.L_box / (self.N_mesh - 1)

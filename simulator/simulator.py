@@ -91,11 +91,15 @@ class Simulator:
             if self._inside_simbox(cells):
 
                 # collect statistics
-                if n % 500 == 0 and n > cells[0].N_wetting + 1000 and n_coll == -1:
+                if (
+                    n % simbox.n_stats == 0
+                    and n > cells[0].N_wetting + 1000
+                    and n_coll == -1
+                ):
                     stats_df = hf.collect_stats(cells, table=stats_df)
 
                 # view the simulation box
-                if n % 20000 == 0 and n > cells[0].N_wetting + 1000:
+                if n % simbox.n_view == 0 and n > cells[0].N_wetting + 1000:
                     Figure.view_simbox(
                         cells,
                         chi,

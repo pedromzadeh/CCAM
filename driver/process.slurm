@@ -7,4 +7,4 @@
 #SBATCH --time=1:00:00
 #SBATCH -o %A_%a.out
 
-python process_data.py
+python3.10 process_data.py

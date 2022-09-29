@@ -186,7 +186,7 @@ def predictor_plots(agg_outcomes, binary_ac_outcomes):
     ax3.scatter(agg_outcomes["dv"], agg_outcomes["dtheta"], color=colors, alpha=0.7)
 
     # focus on anti-correlated space now
-    agg_ac_outcomes = agg_outcomes.query("quad == 0 or quad == 2")
+    agg_ac_outcomes = agg_outcomes.query("quadrant == 0 or quadrant == 2")
     colors = [plt.cm.get_cmap("Set1")(j) for j in agg_ac_outcomes.quadrant]
 
     # Pwin(dtheta) LR on anti-correlated space
@@ -298,6 +298,20 @@ def Pwin_plot(
 
     if legend:
         plt.legend()
+
+
+def simbox_view(file):
+    """
+    Interactive drawing of a .png.
+
+    Parameters
+    ----------
+    file : str
+        Path to a .png file.
+    """
+    from IPython.display import Image
+
+    return Image(file, retina=True)
 
 
 def train_lr(x, y):

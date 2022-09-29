@@ -14,5 +14,6 @@ setup(
         "substrate",
         "helper_functions",
         "visuals",
-    ]
+        "analysis",
+    ],
 )

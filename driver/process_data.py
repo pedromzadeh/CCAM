@@ -6,7 +6,7 @@ from analysis import analysis
 for pol_type in ["sva", "ffcr"]:
 
     # path to collision results
-    proj_root = os.path.dirname(__file__)
+    proj_root = os.path.dirname(os.path.dirname(__file__))
     path_to_data = os.path.join(proj_root, f"output/{pol_type}")
 
     # all .csv files to read -- 462 * 96

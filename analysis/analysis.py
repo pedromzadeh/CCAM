@@ -423,7 +423,7 @@ def _collision_outcome(file):
 
 
 def _all_files(path_to_data):
-    file_path = os.path.join(path_to_data, "/grid_id*/run_*")
+    file_path = os.path.join(path_to_data, "grid_id*/run_*")
     files = glob(file_path)
     return files
 

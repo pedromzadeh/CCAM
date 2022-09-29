@@ -492,3 +492,155 @@ def _two_feature_stats(binary_outcome, features, const_feat):
         "dv": np.array(dv_mat),
         "dtheta": np.array(dtheta_mat),
     }
+
+
+def _ffcr_det_sol(theta_cr, ax=None, lb=None, plot_legend=False):
+    """
+    Solves the ffcr deterministic model.
+
+    Parameters
+    ----------
+    theta_cr : float
+        Specifies the target repolarization angle, in degrees.
+
+    ax : plt.Axes
+        Axis to plot to, by default None.
+
+    lb : str
+        Title of the axis, by default None.
+
+    plot_legend : bool, optional
+        Whether to draw legend, by default False.
+
+    Returns
+    -------
+    ndarray
+        Time to repolarize, i.e. reach pi/2.
+    """
+
+    # hyperparameters
+    dt = 0.002
+    N = 5000
+    tau_cr = 1.5
+    tau_cg = 2 * tau_cr
+    tau_ffcr = 10e10
+    theta_cr = theta_cr * np.pi / 180
+    theta_cg = 0
+    SOLVE_FFCR = True
+    REAL_UNITS_TIME = 8  # min
+
+    tau_1 = tau_cr * tau_cg / (tau_cr - tau_cg)
+    tau_2 = tau_cr * tau_cg / (tau_cr + tau_cg)
+
+    x = [np.cos(theta_cg), np.sin(theta_cg)]
+    r = [np.cos(theta_cr), np.sin(theta_cr)]
+
+    # numerical evolution of theta
+    theta = [0 * np.pi / 180]
+    for i in range(N):
+        t = theta[i]
+        pos = [np.cos(t), np.sin(t)]
+        cross_cg = np.cross(x, pos)
+        cross_cr = np.cross(r, pos)
+        sgn = 1 if t < np.pi / 2 else -1
+        tau_cr_eff = tau_ffcr if (t > np.pi / 2 and SOLVE_FFCR) else tau_cr
+        dtheta = (
+            -1 / tau_cg * np.arcsin(sgn * cross_cg) * dt
+            - 1 / tau_cr_eff * np.arcsin(cross_cr) * dt
+        )
+        theta.append(t + dtheta)
+
+    time = np.arange(N + 1) * dt
+
+    # ----------------- theoretical curves ----------------- #
+    # each leg's steady-state
+    PHI_1 = (tau_cr * theta_cg + tau_cg * (np.pi - theta_cr)) / (tau_cr - tau_cg)
+    PHI_2 = (theta_cg * tau_cr + theta_cr * tau_cg) / (tau_cr + tau_cg)
+    PHI_3 = (
+        np.pi
+        if SOLVE_FFCR
+        else (np.pi * tau_cr + theta_cr * tau_cg) / (tau_cr + tau_cg)
+    )
+
+    # t_prime, t_dprime: times we transition from legs 1-2, 2-3
+    # term1 = np.pi*tau_cg + tau_cr*(np.pi+2*theta_cg-2*theta_cr)
+    # term2 = 2 * (tau_cg*(np.pi-theta_cr) + tau_cr*theta_cg)
+    # t_prime = (tau_cg*tau_cr)/(tau_cg-tau_cr) * np.log(term1/term2)
+
+    # term1 = np.pi*(tau_cg+tau_cr) + 2*tau_cr*(theta_cg-theta_cr)
+    # term2 = 2*(theta_cr*tau_cg+theta_cg*tau_cr) - np.pi*(tau_cg+tau_cr)
+    # t_dprime = t_prime + tau_2 * np.log(term1/term2)
+
+    term1 = np.pi * (tau_cg + tau_cr) - 2 * theta_cr * tau_cr
+    term2 = 2 * tau_cg * (np.pi - theta_cr)
+    t_prime = (tau_cg * tau_cr) / (tau_cg - tau_cr) * np.log(term1 / term2)
+
+    term1 = np.pi * (tau_cg + tau_cr) - 2 * tau_cr * theta_cr
+    term2 = 2 * theta_cr * tau_cg - np.pi * (tau_cg + tau_cr)
+    t_dprime = t_prime + tau_2 * np.log(term1 / term2)
+
+    # print('t\' = {}\tPhi_2 = {}'.format(t_prime,PHI_2*180/np.pi))
+    # print('t\'\' = {}\tPhi_3 = {}'.format(t_dprime,PHI_3*180/np.pi))
+
+    # computing each leg analytically
+    leg1 = PHI_1 * (1 - np.exp(-time / tau_1))
+    shift = theta_cr - np.pi / 2
+    leg2 = PHI_2 + (shift - PHI_2) * np.exp(-(time - t_prime) / tau_2)
+    leg3 = PHI_3 + (np.pi / 2 - PHI_3) * np.exp(-(time - t_dprime) / tau_cg)
+
+    # plot each leg, along with numerical result
+    if ax is not None:
+        t1 = np.where(np.fabs(time - t_prime) < dt)[0][0]
+        t2 = np.where(np.fabs(time - t_dprime) < dt)[0][0]
+        ax.set_title(lb, x=-0.11, y=1.1)
+        ax.plot(
+            time * REAL_UNITS_TIME,
+            np.array(theta) * 180 / np.pi,
+            label="numerical",
+            lw=6,
+            c="black",
+        )
+        ax.plot(
+            time[:t1] * REAL_UNITS_TIME,
+            leg1[:t1] * 180 / np.pi,
+            label=r"$\psi_1(t)$",
+            lw=2,
+            c="red",
+        )
+        ax.plot(
+            time[t1:t2] * REAL_UNITS_TIME,
+            leg2[t1:t2] * 180 / np.pi,
+            label=r"$\psi_2(t)$",
+            lw=2,
+            color="orange",
+        )
+        ax.plot(
+            time[t2:] * REAL_UNITS_TIME,
+            leg3[t2:] * 180 / np.pi,
+            label=r"$\psi_3(t)$",
+            lw=2,
+            color="magenta",
+        )
+        ax.plot(
+            time * REAL_UNITS_TIME,
+            np.ones(N + 1) * (theta_cr * 180 / np.pi - 90),
+            ls="--",
+            color="black",
+            lw=3,
+            label=r"$\psi_{\rm CR}-\pi/2$",
+        )
+        ax.plot(
+            time * REAL_UNITS_TIME,
+            np.ones(N + 1) * (90),
+            ls="-.",
+            color="black",
+            lw=3,
+            label=r"$\pi/2$",
+        )
+        ax.set_xlabel(r"$t\ [\rm min]$")
+        ax.set_ylabel(r"$\psi[\degree]$")
+        ax.set_ylim(0, 200)
+        if plot_legend:
+            ax.legend(loc=(1.1, 0.001))
+
+    return t_dprime * REAL_UNITS_TIME

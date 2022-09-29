@@ -345,6 +345,67 @@ def train_lr(x, y):
     return model
 
 
+def predictive_power(X, y, predictor):
+    """
+    Prints the confidence with which the given predictor predicts the winning
+    probability.
+
+    Three metrics are used, last one not printed:
+
+    1. score: fraction of points labeled correctly with pred > 0.5 == 1
+    2. brier score lr: MSD of label and pred
+    3. brier score step: MSD of label and pred, where pred == 1 if x > < 0.
+
+    Parameters
+    ----------
+    X : arraylike
+        All of the data on the predictor.
+
+    y : arraylike
+        Pwin, as 0s and 1s.
+
+    predictor : str
+        Defines the predictor.
+
+    Raises
+    ------
+    ValueError
+        If predictor isn't one of "dv" or "dtheta".
+    """
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import brier_score_loss
+
+    kf = KFold(n_splits=10, shuffle=True)
+    score = []
+    brier_lr = []
+    brier_step = []
+
+    for train_indx, test_indx in kf.split(X):
+        X_train, y_train = X[train_indx], y[train_indx]
+        X_test, y_test = X[test_indx], y[test_indx]
+
+        lr_model = train_lr(X_train, y_train)
+
+        if predictor == "dv":
+            y_pred_step = [1 if x > 0 else 0 for x in X_test.flatten()]
+        elif predictor == "dtheta":
+            y_pred_step = [1 if x < 0 else 0 for x in X_test.flatten()]
+        else:
+            raise ValueError(f"Predictor {predictor} is invalid.")
+
+        score.append(lr_model.score(X_test, y_test))
+        brier_lr.append(brier_score_loss(y_test, lr_model.predict_proba(X_test)[:, 1]))
+        brier_step.append(brier_score_loss(y_test, y_pred_step))
+
+    print(
+        f"{predictor} predicts the winning probability with the following confidence:"
+    )
+    print(f"\t- score: {np.mean(score):.1%} +/- {np.sqrt(np.var(score)):.1%}")
+    print(
+        f"\t- brier score: {np.mean(brier_lr):.3f} +/- {np.sqrt(np.var(brier_lr)):.3f}"
+    )
+
+
 def _quadrant(x):
     if x.dv > 0 and x.dtheta > 0:
         return 1

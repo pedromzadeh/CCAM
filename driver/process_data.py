@@ -16,8 +16,8 @@ for pol_type in ["sva", "ffcr"]:
     binary_outcomes = analysis.outcomes(files)
 
     # store processed data
-    path_to_res = os.path.join(proj_root, f"processed/{pol_type}")
+    path_to_res = os.path.join(proj_root, "processed")
     if not os.path.exists(path_to_res):
         os.makedirs(path_to_res, exist_ok=True)
 
-    binary_outcomes.to_parquet(path_to_res)
+    binary_outcomes.to_csv(os.path.join(path_to_res, f"{pol_type}_binary_outcomes.csv"))

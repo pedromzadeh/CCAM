@@ -322,7 +322,7 @@ def evolve_cell(cell, force, force_modality):
 
     # compute motility forces at time n
     if force_modality == "constant":
-        fx_motil, fy_motil = force.constant_motility_force(cell, alpha=0.1)
+        fx_motil, fy_motil = force.constant_motility_force(cell, alpha=0.5)
 
     else:
         warnings.warn(

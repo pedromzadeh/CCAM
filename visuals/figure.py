@@ -59,5 +59,6 @@ class Figure:
             )
 
         plt.contour(chi, levels=[0.5], extent=[0, L, 0, L])
+        plt.axis("equal")
         plt.savefig(path)
         plt.close()

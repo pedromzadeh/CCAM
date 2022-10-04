@@ -197,3 +197,52 @@ class Substrate:
         chi = chiV + chiH
         chi = np.where(chi < 0.001, 0, chi)
         return chi
+
+    def two_state_sub(self, square_width=10, bridge_width=5):
+        # useful variables
+        sq_half_dim = square_width / 2
+        d = (square_width - bridge_width) / 2
+        L_box = self.L_box
+        xi = self.xi
+
+        # lattice points
+        x, y = np.meshgrid(np.linspace(0, 50, 100), np.linspace(0, 50, 100))
+
+        # index of the two squares, used for symmetric positioning
+        ind = [1, 3]
+
+        # build the bridge
+        xL = ind[0] * L_box / 4 - sq_half_dim + 1
+        xR = ind[1] * L_box / 4 + sq_half_dim - 1
+        yB, yT = L_box / 2 - sq_half_dim + d, L_box / 2 + sq_half_dim - d
+        chi_y = 0.5 * ((1 - np.tanh((y - yB) / xi)) + (1 + np.tanh((y - yT) / xi)))
+        chi_x = 0.5 * ((1 - np.tanh((x - xL) / xi)) + (1 + np.tanh((x - xR) / xi)))
+        bridge = chi_x + chi_y
+        bridge = np.where(bridge > 1, 1, bridge)
+
+        # build the two squares
+        squares = None
+        for k in range(2):
+            xL = ind[k] * L_box / 4 - sq_half_dim
+            xR = ind[k] * L_box / 4 + sq_half_dim
+            yB, yT = L_box / 2 - sq_half_dim, L_box / 2 + sq_half_dim
+            chi_y = 0.5 * (
+                (1 - np.tanh((y - yB) / xi)) + (1 + np.tanh((y - yT) / xi))
+            )
+            chi_x = 0.5 * (
+                (1 - np.tanh((x - xL) / xi)) + (1 + np.tanh((x - xR) / xi))
+            )
+            chi = chi_x + chi_y
+            chi = np.where(chi > 1, 1, chi)
+            if squares is None:
+                squares = chi
+            else:
+                squares += chi
+
+        # bridge + squares ==> two state substrate
+        # refactoring so range is [0, 1]
+        squares -= 1
+        two_state = squares + bridge - 1
+        two_state = np.where(two_state < 0, 0, two_state)
+
+        return two_state

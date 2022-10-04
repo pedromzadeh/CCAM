@@ -202,11 +202,12 @@ class Substrate:
         # useful variables
         sq_half_dim = square_width / 2
         d = (square_width - bridge_width) / 2
+        N_mesh = self.N_mesh
         L_box = self.L_box
         xi = self.xi
 
         # lattice points
-        x, y = np.meshgrid(np.linspace(0, 50, 100), np.linspace(0, 50, 100))
+        x, y = np.meshgrid(np.linspace(0, 50, N_mesh), np.linspace(0, 50, N_mesh))
 
         # index of the two squares, used for symmetric positioning
         ind = [1, 3]
@@ -226,12 +227,8 @@ class Substrate:
             xL = ind[k] * L_box / 4 - sq_half_dim
             xR = ind[k] * L_box / 4 + sq_half_dim
             yB, yT = L_box / 2 - sq_half_dim, L_box / 2 + sq_half_dim
-            chi_y = 0.5 * (
-                (1 - np.tanh((y - yB) / xi)) + (1 + np.tanh((y - yT) / xi))
-            )
-            chi_x = 0.5 * (
-                (1 - np.tanh((x - xL) / xi)) + (1 + np.tanh((x - xR) / xi))
-            )
+            chi_y = 0.5 * ((1 - np.tanh((y - yB) / xi)) + (1 + np.tanh((y - yT) / xi)))
+            chi_x = 0.5 * ((1 - np.tanh((x - xL) / xi)) + (1 + np.tanh((x - xR) / xi)))
             chi = chi_x + chi_y
             chi = np.where(chi > 1, 1, chi)
             if squares is None:

@@ -278,7 +278,7 @@ def collect_stats(cells, table=None):
     return table
 
 
-def evolve_cell(cell, cells, force, force_modality, chi, n_collision):
+def evolve_cell(cell, force, force_modality):
     """
     Evolves the cell by updating its class variables from time t to time t_dt.
     Attributes updated are
@@ -294,31 +294,21 @@ def evolve_cell(cell, cells, force, force_modality, chi, n_collision):
     cell : Cell object
         Cell of interest to update.
 
-    cells : list of Cell objects
-        All cells in system.
-
     force : Force object
         Gives access to computing forces.
 
     force_modality : str
         Specifies what kind of active force the cell generates, options are
         'constant' and 'actin-poly'.
-
-    chi : Substrate object
-        Specifies the substrate.
-
-    n_collision : int
-        Specifies whether a collision has taken place. Used in FFCR polarity.
     """
 
     # needed more than once
     grad_x, grad_y, _ = compute_gradients(cell.phi, cell.simbox.dx)
     grad_phi = np.array([grad_x, grad_y])
-    x_hat = [1, 0]
-    eta = cells[0].eta
+    eta = cell.eta
 
     # phi_(n+1)
-    phi_i_next, dF_dphi = _update_field(cell, cells, grad_phi, force)
+    phi_i_next, dF_dphi = _update_field(cell, grad_phi, force)
 
     # theta_(n+1)
     if cell.polarity_mode == "SVA":
@@ -327,18 +317,11 @@ def evolve_cell(cell, cells, force, force_modality, chi, n_collision):
     elif cell.polarity_mode == "DVA":
         theta_i_next = cell.theta + polarity.dynamic_velocity_aligning(cell)
 
-    elif cell.polarity_mode == "FFCR":
-        theta_i_next = cell.theta + polarity.FFCR(
-            cells,
-            cell.id,
-            x_hat,
-            n_collision,
-        )
+    else:
+        raise ValueError(f"{cell.polarity_mode} invalid.")
 
     # compute motility forces at time n
-    if force_modality == "actin-poly":
-        fx_motil, fy_motil = force.actin_motility_force(cell, chi, grad_phi, x_hat)
-    elif force_modality == "constant":
+    if force_modality == "constant":
         fx_motil, fy_motil = force.constant_motility_force(cell, alpha=0.1)
 
     else:
@@ -359,10 +342,9 @@ def evolve_cell(cell, cells, force, force_modality, chi, n_collision):
     cell.v_cm = compute_v_CM(cell)
     cell.vx = (fx_thermo + fx_motil) / eta
     cell.vy = (fy_thermo + fy_motil) / eta
-    cell.contour = find_contour(cell.phi)
 
 
-def _update_field(cell, cells, grad_phi, force):
+def _update_field(cell, grad_phi, force):
 
     # obtain relevant variables at time n
     dt = cell.simbox.dt
@@ -371,7 +353,7 @@ def _update_field(cell, cells, grad_phi, force):
     vy_i = cell.vy
 
     # compute equation of motion at time n
-    dF_dphi = force.total_func_deriv(cell, cells)
+    dF_dphi = force.total_func_deriv(cell)
     grad_x, grad_y = grad_phi
     v_dot_gradphi = vx_i * grad_x + vy_i * grad_y
 

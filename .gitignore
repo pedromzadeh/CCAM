@@ -6,3 +6,4 @@ configs/sva/grid_id*
 configs/ffcr/grid_id*
 examples/
 driver/*.out
+temp viz/

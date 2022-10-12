@@ -1,6 +1,26 @@
 import numpy as np
 
 
+def PRW(cell):
+    """
+    Models cell polarity as a persistent random walk.
+
+    Parameters
+    ----------
+    cell : Cell object
+        The cell whose polarity we want to update.
+
+    Returns
+    -------
+    float
+        The change in cell polarity if modeled as PRW.
+    """
+    D = cell.D
+    dt = cell.simbox.dt
+
+    return np.sqrt(D * dt) * np.random.randn()
+
+
 def dynamic_velocity_aligning(cell):
     """
     Computes the change in polarity angle at the next time step according to

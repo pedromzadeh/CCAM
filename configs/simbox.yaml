@@ -1,4 +1,4 @@
-N: 200000 # total simulation time
+N: 50000 # total simulation time
 dt: 0.002 # time step
 N_mesh: 200 # lattice grid size
 L_box: 50 # size of simulation box in real units

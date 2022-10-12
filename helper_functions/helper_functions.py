@@ -2,7 +2,6 @@ import warnings
 from polarity import polarity
 from skimage import measure
 import numpy as np
-import pandas as pd
 
 
 def find_contour(field, level=0.5):
@@ -119,166 +118,7 @@ def compute_gradients(field, dx):
     return (grad_x, grad_y, laplacian)
 
 
-def compute_contact_angle(cell):
-    """
-    Computes the approximate contact angle between the cell front and the
-    substrate, in degrees.
-
-    Parameters
-    ----------
-    cell : Cell object
-        The cell in question.
-
-    Returns
-    -------
-    float
-
-    Raises
-    ------
-    ValueError
-        Ensures only 2 cells exist in the system.
-
-    Notes
-    -----
-    There are two strict assumptions that have to be met:
-    1. The entire cell is in one frame and contour set is not disjoint
-    2. There are only 2 cells, IDed 0 and 1. Cell 0 travels from left to right,
-    and cell 1 travels from right to left.
-    """
-    # checks the two assumptions
-    assert cell.id < 2
-    assert len(cell.contour) == 1
-
-    # get the two endpoints of the cell that are in contact with the substrate
-    #   --> assign a range of y values to be on the substrate
-    #   --> get indices of all y within this range
-    #   --> find the two extrema from the list of associated x values
-    #   --> find the indices of these two x values
-    #           - Contour points are given from top and go counter clockwise. If
-    #             there are multiple y values with same xmin, len(ind_xmin) > 1.
-    #             Due to CCW nature, the last index is associated with ymin.
-    x, y = cell.contour[0][:, 1], cell.contour[0][:, 0]
-    buffer = 1
-    ymin = np.min(y)
-    y_slice = np.where((y >= ymin) & (y <= ymin + buffer))[0]
-    xmin, xmax = np.min(x[y_slice]), np.max(x[y_slice])
-    ind_xmin, ind_xmax = np.where(x == xmin)[0], np.where(x == xmax)[0][0]
-    ind_xmin = ind_xmin[len(ind_xmin) - 1]
-    eps = 10e-8
-
-    # if phi is at the border, return nan
-    if xmin < 1 or xmax > cell.simbox.N_mesh - 1:
-        return None
-
-    # left -> right, contact angle is on the right side
-    if cell.id == 0:
-        x1, x2 = x[ind_xmax + 4], x[ind_xmax + 10]
-        y1, y2 = y[ind_xmax + 4], y[ind_xmax + 10]
-
-        m = (y2 - y1) / (x2 - x1 + eps)
-        ca = np.arctan(-m) * 180 / np.pi
-
-        return ca
-
-    # right -> left, contact angle is on the left side
-    elif cell.id == 1:
-        x1, x2 = x[ind_xmin - 10], x[ind_xmin - 4]
-        y1, y2 = y[ind_xmin - 10], y[ind_xmin - 4]
-
-        m = (y2 - y1) / (x2 - x1 + eps)
-        ca = np.arctan(m) * 180 / np.pi
-
-        return ca
-
-    else:
-        raise ValueError(
-            "This method only works for two-body cells. Check to make sure only \
-                2 cells exist in the system. Also, read the assumptions carefully."
-        )
-
-
-def collect_stats(cells, table=None):
-    """
-    Measures various statistics about the cells and appends it as a new row to
-    the ongoing table of measurements.
-
-    Parameters
-    ----------
-    cells : list of Cell objects
-        All cells in the system.
-
-    table : pd.DataFrame, optional
-        The running table holding data, by default None
-
-    Returns
-    -------
-    pd.DataFrame
-        Table of data with the new measurements added as rows. The columns are
-        ['cell id',
-        'lambda',
-        'gamma',
-        'A',
-        'beta',
-        'x_CM',
-        'y_CM',
-        'polarity angle',
-        'CM speed',
-        'contact angle',
-        'x_rCR',
-        'y_rCR',
-        'N_mesh',
-        'L_box',
-        'dt']
-    """
-    for cell in cells:
-        v = np.linalg.norm(cell.v_cm)
-        ca = compute_contact_angle(cell)
-        simbox = cell.simbox
-
-        cell_df = pd.DataFrame(
-            data=[
-                [
-                    cell.id,
-                    cell.lam,
-                    cell.gamma,
-                    cell.A,
-                    cell.beta,
-                    cell.cm[1][0],
-                    cell.cm[1][1],
-                    cell.theta,
-                    v,
-                    ca,
-                    cell.r_CR[0],
-                    cell.r_CR[1],
-                    simbox.N_mesh,
-                    simbox.L_box,
-                    simbox.dt,
-                ]
-            ],
-            columns=[
-                "cell id",
-                "lambda",
-                "gamma",
-                "A",
-                "beta",
-                "x_CM",
-                "y_CM",
-                "polarity angle",
-                "CM speed",
-                "contact angle",
-                "x_rCR",
-                "y_rCR",
-                "N_mesh",
-                "L_box",
-                "dt",
-            ],
-        )
-        table = pd.concat([table, cell_df])
-
-    return table
-
-
-def evolve_cell(cell, force, force_modality):
+def evolve_cell(cell, force, force_modality, alpha):
     """
     Evolves the cell by updating its class variables from time t to time t_dt.
     Attributes updated are
@@ -299,7 +139,10 @@ def evolve_cell(cell, force, force_modality):
 
     force_modality : str
         Specifies what kind of active force the cell generates, options are
-        'constant' and 'actin-poly'.
+        'constant'.
+
+    alpha : float
+        Specifies the magnitude of the constant motility force.
     """
 
     # needed more than once
@@ -311,7 +154,10 @@ def evolve_cell(cell, force, force_modality):
     phi_i_next, dF_dphi = _update_field(cell, grad_phi, force)
 
     # theta_(n+1)
-    if cell.polarity_mode == "SVA":
+    if cell.polarity_mode == "PRW":
+        theta_i_next = cell.theta + polarity.PRW(cell)
+
+    elif cell.polarity_mode == "SVA":
         theta_i_next = cell.theta + polarity.static_velocity_aligning(cell)
 
     elif cell.polarity_mode == "DVA":
@@ -322,7 +168,7 @@ def evolve_cell(cell, force, force_modality):
 
     # compute motility forces at time n
     if force_modality == "constant":
-        fx_motil, fy_motil = force.constant_motility_force(cell, alpha=0.5)
+        fx_motil, fy_motil = force.constant_motility_force(cell, alpha)
 
     else:
         warnings.warn(

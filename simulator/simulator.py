@@ -77,7 +77,8 @@ class Simulator:
         polarity_type : str
             Specifies the polarity type being used. Options are "SVA"
             for static velocity-alignment, and "FFCR" for front-front
-            contact repolarization.
+            contact repolarization. Used for reading the correct
+            configuration files.
         """
         # define various paths
         paths = self._define_paths(run_id, grid_id, polarity_type)
@@ -92,6 +93,7 @@ class Simulator:
         # initialize the force calculator
         force_calculator = Force(paths["energy"])
 
+        # collect cell positions
         cms = pd.DataFrame()
 
         # carry out the simulation
@@ -99,7 +101,7 @@ class Simulator:
 
             # collect statistics
             if n % simbox.n_stats == 0:
-                cms = pd.concat([cms, pd.DataFrame(cell.cm[1])])
+                cms = pd.concat([cms, pd.DataFrame([cell.cm[1]], columns=["x", "y"])])
 
             # view the simulation box
             if n % simbox.n_view == 0:
@@ -113,7 +115,10 @@ class Simulator:
             force_modality = "constant"
 
             # update each cell to the next time step
-            hf.evolve_cell(cell, force_calculator, force_modality)
+            hf.evolve_cell(cell, force_calculator, force_modality, alpha=0.5)
+
+        # simulation is done; store data
+        cms.to_csv(paths["result"])
 
     def _build_system(self, simbox, cell_config):
         """

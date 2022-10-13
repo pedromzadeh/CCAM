@@ -1,9 +1,9 @@
-collider.egg-info/
+*.egg-info/
 .vscode
 *__pycache__/
 output/
-configs/sva/grid_id*
-configs/ffcr/grid_id*
+configs/sva/
+configs/ffcr/
+configs/prw/
 examples/
 driver/*.out
-temp viz/

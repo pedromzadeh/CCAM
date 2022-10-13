@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-    name="collider",
+    name="CCAM",
     version="1.0",
     author="Pedrom Zadeh",
-    description="2D cell collisions simulated within phase-field framework",
+    description="Characterizing collisions with acceleration maps",
     packages=[
         "box",
         "cell",

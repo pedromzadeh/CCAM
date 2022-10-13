@@ -167,7 +167,7 @@ class Simulator:
         SIMBOX_CONFIG = os.path.join(self.root_dir, "configs/simbox.yaml")
         ENERGY_CONFIG = os.path.join(self.root_dir, "configs/energy.yaml")
 
-        if polarity_type not in ["sva", "ffcr"]:
+        if polarity_type not in ["sva", "ffcr", "prw"]:
             raise KeyError(f"Polarity mode {polarity_type} is invalid.")
 
         CELL_CONFIG = os.path.join(

@@ -118,7 +118,7 @@ def compute_gradients(field, dx):
     return (grad_x, grad_y, laplacian)
 
 
-def evolve_cell(cell, force, force_modality, alpha):
+def evolve_cell(cell, force, force_modality):
     """
     Evolves the cell by updating its class variables from time t to time t_dt.
     Attributes updated are
@@ -140,9 +140,6 @@ def evolve_cell(cell, force, force_modality, alpha):
     force_modality : str
         Specifies what kind of active force the cell generates, options are
         'constant'.
-
-    alpha : float
-        Specifies the magnitude of the constant motility force.
     """
 
     # needed more than once
@@ -168,7 +165,7 @@ def evolve_cell(cell, force, force_modality, alpha):
 
     # compute motility forces at time n
     if force_modality == "constant":
-        fx_motil, fy_motil = force.constant_motility_force(cell, alpha)
+        fx_motil, fy_motil = force.constant_motility_force(cell)
 
     else:
         warnings.warn(

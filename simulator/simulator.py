@@ -115,7 +115,7 @@ class Simulator:
             force_modality = "constant"
 
             # update each cell to the next time step
-            hf.evolve_cell(cell, force_calculator, force_modality, alpha=0.5)
+            hf.evolve_cell(cell, force_calculator, force_modality)
 
         # simulation is done; store data
         cms.to_csv(paths["result"])

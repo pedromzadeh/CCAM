@@ -96,15 +96,12 @@ class Force:
 
         return dFch_dphi + dFarea_dphi + dFchi_dphi
 
-    def constant_motility_force(self, cell, alpha):
+    def constant_motility_force(self, cell):
         """
         Computes a constant motility force as $f = alpha * phi * p$
 
         cell : Cell object
             Cell in question.
-
-        alpha : float, optional
-            Specifies the strength of constant force.
 
         Returns
         -------
@@ -117,6 +114,6 @@ class Force:
         theta_i = cell.theta
         p_i = [np.cos(theta_i), np.sin(theta_i)]
 
-        fx_motil = alpha * phi_i * p_i[0]
-        fy_motil = alpha * phi_i * p_i[1]
+        fx_motil = cell.alpha * phi_i * p_i[0]
+        fy_motil = cell.alpha * phi_i * p_i[1]
         return fx_motil, fy_motil

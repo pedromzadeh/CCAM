@@ -37,6 +37,9 @@ class Cell:
     self.beta : float
         Specifies strength with which cell generates protusions on substrate.
 
+    self.alpha : float
+        Specifies the strength of cell self-propulsion.
+
     self.D : float
         Specifies cell diffusion coefficient.
 
@@ -154,6 +157,7 @@ class Cell:
         self.A = config["A"]
         self.g = config["g"]
         self.beta = config["beta"]
+        self.alpha = config["alpha"]
         self.D = config["D"]
         self.J = config["J"]
         self.lam = config["lam"]

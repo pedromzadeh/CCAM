@@ -11,7 +11,7 @@ simulator = Simulator()
 n_workers = 48
 
 # run a total of 2*n_workers simulations
-for batch_id in range(2):
+for batch_id in range(1):
     processes = [
         multiprocessing.Process(
             target=simulator.execute, args=[run_id, grid_id, pol_type]

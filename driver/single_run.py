@@ -1,5 +1,6 @@
-from simulator.simulator import Simulator
 import sys
+
+from simulator.simulator import Simulator
 
 # command line args
 grid_id = int(sys.argv[1])

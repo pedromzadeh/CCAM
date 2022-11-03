@@ -69,7 +69,7 @@ class Cell:
         Rows are previous and current CM, respectively, with ordering (x, y).
 
     self.theta : float
-        Defines cell polarity direction.
+        Defines cell polarity direction, in radians [-pi : pi].
 
     self.v_cm : ndarray of shape (2,)
         Cell center of mass velocity (v_cm_x, v_cm_y).

@@ -92,9 +92,9 @@ class Force:
         """
         dFch_dphi = self.cahn_hilliard_func_deriv(cell)
         dFarea_dphi = self.area_func_deriv(cell)
-        dFchi_dphi = self.substrate_int_func_deriv(cell)
+        # dFchi_dphi = self.substrate_int_func_deriv(cell)
 
-        return dFch_dphi + dFarea_dphi + dFchi_dphi
+        return dFch_dphi + dFarea_dphi
 
     def constant_motility_force(self, cell):
         """
@@ -116,4 +116,29 @@ class Force:
 
         fx_motil = cell.alpha * phi_i * p_i[0]
         fy_motil = cell.alpha * phi_i * p_i[1]
+        return fx_motil, fy_motil
+
+    def integrin_motility_force(self, cell, grad_phi, mp):
+
+        # field normal to the boundary
+        norm_grad_phi = np.sqrt(np.sum(grad_phi * grad_phi, axis=0))
+        n_field = -1 * grad_phi / (norm_grad_phi + 1e-10)
+
+        # make a field out of cell polarity
+        phi = cell.phi
+        p = [np.cos(cell.theta), np.sin(cell.theta)]
+        p_field = np.array([np.ones(phi.shape) * p[0], np.ones(phi.shape) * p[1]])
+
+        # denote front and rear of cell
+        p_dot_n = np.sum(p_field * n_field, axis=0)
+        cell_front = np.where(p_dot_n > 0, p_dot_n, 0)
+        cell_rear = np.where(p_dot_n < 0, p_dot_n, 0)
+
+        alpha_front = cell.alpha
+        alpha_rear = alpha_front * 0.5
+
+        magnitude = phi * (1 - mp) * (alpha_front * cell_front - alpha_rear * cell_rear)
+        fx_motil = magnitude * p[0]
+        fy_motil = magnitude * p[1]
+
         return fx_motil, fy_motil

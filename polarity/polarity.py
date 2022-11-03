@@ -170,7 +170,70 @@ def FFCR(cells, i, t, n_collision, tau_CR=1.5, tau_CG=3.0):
     return term_CG * dt + term_CR * dt + noise
 
 
-def polarity_potential(cell, mp, dx):
+def integrin(cell, mp, n):
+    # unpack
+    D = cell.D
+    dt = cell.simbox.dt
+
+    # omega is the angles associated with the cell's contour
+    omega, U_omega = polarity_potential(cell, mp)
+
+    # force due to this potential
+    F_omega = -np.gradient(U_omega, np.mean(np.diff(omega)))
+
+    # find omega closest to current polarity angle to estimate force
+    pol_ang = cell.theta
+    closest_omega = min(omega, key=lambda x: abs(x - pol_ang))
+    indx = list(omega).index(closest_omega)
+    force = F_omega[indx]
+
+    if n % 500 == 0:
+        import matplotlib.pyplot as plt
+
+        plt.subplot(121)
+        plt.plot(omega, U_omega, lw=3, color="black", alpha=0.7)
+        plt.ylabel(r"$\mathcal{U}[\omega]$")
+        plt.xlabel(r"$\omega$")
+        plt.title(
+            f"Force = {500 * force:.3f}\npol angle = {cell.theta:.2f}\nclosest omega = {closest_omega:.2f}\n"
+        )
+        plt.ylim([-1.5, 0.5])
+
+        plt.subplot(122)
+        L = cell.simbox.L_box
+        plt.imshow(
+            cell.phi, cmap="Greys", origin="lower", extent=[0, L, 0, L], alpha=0.5
+        )
+
+        plt.contour(cell.phi, levels=[0.5], extent=[0, L, 0, L], colors="black")
+
+        xcm, ycm = cell.cm[1]
+        px, py = [np.cos(cell.theta), np.sin(cell.theta)]
+        vx, vy = cell.v_cm
+        rx, ry = cell.r_CR
+
+        plt.quiver(
+            xcm,
+            ycm,
+            px,
+            py,
+            angles="xy",
+            scale_units="xy",
+            color="blue",
+            label="Polarity",
+            alpha=0.7,
+        )
+
+        plt.contour(mp, levels=[0.5], extent=[0, L, 0, L])
+        plt.axis("equal")
+
+        plt.savefig(f"../output/integrins/grid_id0/run_0/visuals/img_{n}.png")
+        plt.close()
+
+    return 500 * force * dt + np.sqrt(D * dt) * np.random.randn()
+
+
+def polarity_potential(cell, mp):
     """
     Computes the potential energy of the cell associated with its polarity.
     There is a cost if the polarity points toward where there is
@@ -184,9 +247,6 @@ def polarity_potential(cell, mp, dx):
     mp : ndarray of shape (n_mesh, n_mesh)
         The micropattern's phase field.
 
-    dx : float
-        The lattice spacing of the simulation box.
-
     Returns
     -------
     tuple
@@ -196,13 +256,14 @@ def polarity_potential(cell, mp, dx):
     # get cell's contour points
     cntr = cell.contour[0]
     x, y = cntr[:-1, 1], cntr[:-1, 0]
+    dx = cell.simbox.dx
 
     # if point outside mp, costly; else not costly
     pol_pot_cntr = [mp[int(y), int(x)] - 1 for x, y in zip(x, y)]
 
     # evaluate angles associated with each contour point, then sort
     cm = cell.cm[0] / dx
-    angles = [np.arctan2(y - cm[1], x - cm[0]) * 180 / np.pi for x, y in zip(x, y)]
+    angles = [np.arctan2(y - cm[1], x - cm[0]) for x, y in zip(x, y)]
     tups = zip(angles, pol_pot_cntr)
     tups = np.array(sorted(tups, key=lambda x: x[0]))
     angles, pol_pot = tups[:, 0], tups[:, 1]

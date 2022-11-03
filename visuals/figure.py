@@ -33,17 +33,17 @@ class Figure:
             alpha=0.7,
         )
 
-        plt.quiver(
-            xcm,
-            ycm,
-            vx,
-            vy,
-            angles="xy",
-            scale_units="xy",
-            color="red",
-            label="CM Velocity",
-            alpha=0.7,
-        )
+        # plt.quiver(
+        #     xcm,
+        #     ycm,
+        #     vx,
+        #     vy,
+        #     angles="xy",
+        #     scale_units="xy",
+        #     color="red",
+        #     label="CM Velocity",
+        #     alpha=0.7,
+        # )
 
         if rx != 0 and ry != 0:
             plt.quiver(

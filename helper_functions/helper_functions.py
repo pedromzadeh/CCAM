@@ -118,7 +118,7 @@ def compute_gradients(field, dx):
     return (grad_x, grad_y, laplacian)
 
 
-def evolve_cell(cell, force, force_modality):
+def evolve_cell(cell, force, force_modality, mp, n):
     """
     Evolves the cell by updating its class variables from time t to time t_dt.
     Attributes updated are
@@ -140,6 +140,9 @@ def evolve_cell(cell, force, force_modality):
     force_modality : str
         Specifies what kind of active force the cell generates, options are
         'constant'.
+
+    mp : Substrate object
+        Specifies the micropattern.
     """
 
     # needed more than once
@@ -160,12 +163,18 @@ def evolve_cell(cell, force, force_modality):
     elif cell.polarity_mode == "DVA":
         theta_i_next = cell.theta + polarity.dynamic_velocity_aligning(cell)
 
+    elif cell.polarity_mode == "INTEGRINS":
+        theta_i_next = cell.theta + polarity.integrin(cell, mp, n)
+
     else:
         raise ValueError(f"{cell.polarity_mode} invalid.")
 
     # compute motility forces at time n
     if force_modality == "constant":
         fx_motil, fy_motil = force.constant_motility_force(cell)
+
+    if force_modality == "integrins":
+        fx_motil, fy_motil = force.integrin_motility_force(cell, grad_phi, mp)
 
     else:
         warnings.warn(
@@ -174,13 +183,18 @@ def evolve_cell(cell, force, force_modality):
         )
         fx_motil, fy_motil = 0.0, 0.0
 
+    # new polarity
+    # needed to cast angle to [-pi : pi]
+    p = [np.cos(theta_i_next), np.sin(theta_i_next)]
+
     # compute thermodynamic forces at time n
     fx_thermo = dF_dphi * grad_x
     fy_thermo = dF_dphi * grad_y
 
     # UPDATE class variables now
     cell.phi = phi_i_next
-    cell.theta = theta_i_next
+    cell.contour = find_contour(cell.phi)
+    cell.theta = np.arctan2(p[1], p[1])
     cell.cm = compute_CM(cell)
     cell.v_cm = compute_v_CM(cell)
     cell.vx = (fx_thermo + fx_motil) / eta

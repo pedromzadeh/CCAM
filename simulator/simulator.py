@@ -75,10 +75,7 @@ class Simulator:
             Defines the id of the grid point in the 3D feature space.
 
         polarity_type : str
-            Specifies the polarity type being used. Options are "SVA"
-            for static velocity-alignment, and "FFCR" for front-front
-            contact repolarization. Used for reading the correct
-            configuration files.
+            Specifies the polarity type being used.
         """
         # define various paths
         paths = self._define_paths(run_id, grid_id, polarity_type)
@@ -104,18 +101,18 @@ class Simulator:
                 cms = pd.concat([cms, pd.DataFrame([cell.cm[1]], columns=["x", "y"])])
 
             # view the simulation box
-            if n % simbox.n_view == 0:
-                Figure.view_simbox(
-                    cell,
-                    chi,
-                    os.path.join(paths["figures"], f"img_{n}.png"),
-                )
+            # if n % simbox.n_view == 0:
+            #     Figure.view_simbox(
+            #         cell,
+            #         chi,
+            #         os.path.join(paths["figures"], f"img_{n}.png"),
+            #     )
 
             # set polarity and active force modality based on time step n
-            force_modality = "constant"
+            force_modality = "integrins"
 
             # update each cell to the next time step
-            hf.evolve_cell(cell, force_calculator, force_modality)
+            hf.evolve_cell(cell, force_calculator, force_modality, chi, n)
 
         # simulation is done; store data
         cms.to_csv(paths["result"])
@@ -147,7 +144,7 @@ class Simulator:
         N_mesh, L_box = simbox.N_mesh, simbox.L_box
 
         # define base substrate
-        sub = Substrate(N_mesh, L_box)
+        sub = Substrate(N_mesh, L_box, xi=0.2)
         chi = sub.two_state_sub()
 
         # read cell config files && ensure only 2 exist
@@ -167,7 +164,7 @@ class Simulator:
         SIMBOX_CONFIG = os.path.join(self.root_dir, "configs/simbox.yaml")
         ENERGY_CONFIG = os.path.join(self.root_dir, "configs/energy.yaml")
 
-        if polarity_type not in ["sva", "ffcr", "prw"]:
+        if polarity_type not in ["sva", "ffcr", "prw", "integrins"]:
             raise KeyError(f"Polarity mode {polarity_type} is invalid.")
 
         CELL_CONFIG = os.path.join(

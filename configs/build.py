@@ -4,7 +4,7 @@ import os
 
 pol_type = sys.argv[1]
 
-SIZE = 100
+SIZE = 1
 default_cell_tup = (6, 0.9, 0.48)
 default_cell_tuples = list((default_cell_tup,) * SIZE)
 

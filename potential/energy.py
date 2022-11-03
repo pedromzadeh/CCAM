@@ -125,3 +125,42 @@ class Energy:
         neighbors_present = nc.phi**2
         integrand = cell.phi**2 * neighbors_present
         return self.kappa / cell.lam * np.sum(integrand) * cell.simbox.dx**2
+
+    def polarity_potential(self, cell, mp, dx):
+        """
+        Computes the potential energy of the cell associated with its polarity.
+        There is a cost if the polarity points toward where there is
+        no substrate. This lets us bring the cell back onto the substrate.
+
+        Parameters
+        ----------
+        cell : Cell object
+            The cell.
+
+        mp : ndarray of shape (n_mesh, n_mesh)
+            The micropattern's phase field.
+
+        dx : float
+            The lattice spacing of the simulation box.
+
+        Returns
+        -------
+        tuple
+            angles : ndarray of shape (n_contours, )
+            pol_pot : ndarray of shape (n_contours, )
+        """
+        # get cell's contour points
+        cntr = cell.contour[0]
+        x, y = cntr[:-1, 1], cntr[:-1, 0]
+
+        # if point outside mp, costly; else not costly
+        pol_pot_cntr = [mp[int(y), int(x)] - 1 for x, y in zip(x, y)]
+
+        # evaluate angles associated with each contour point, then sort
+        cm = cell.cm[0] / dx
+        angles = [np.arctan2(y - cm[1], x - cm[0]) * 180 / np.pi for x, y in zip(x, y)]
+        tups = zip(angles, pol_pot_cntr)
+        tups = np.array(sorted(tups, key=lambda x: x[0]))
+        angles, pol_pot = tups[:, 0], tups[:, 1]
+
+        return angles, pol_pot

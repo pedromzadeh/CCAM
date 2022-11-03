@@ -8,3 +8,4 @@ configs/prw/
 configs/integrins/
 examples/
 driver/*.out
+*.mp4

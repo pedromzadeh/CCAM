@@ -194,7 +194,7 @@ def evolve_cell(cell, force, force_modality, mp, n):
     # UPDATE class variables now
     cell.phi = phi_i_next
     cell.contour = find_contour(cell.phi)
-    cell.theta = np.arctan2(p[1], p[1])
+    cell.theta = np.arctan2(p[1], p[0])
     cell.cm = compute_CM(cell)
     cell.v_cm = compute_v_CM(cell)
     cell.vx = (fx_thermo + fx_motil) / eta

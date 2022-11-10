@@ -230,7 +230,8 @@ def integrin(cell, mp, n):
         plt.savefig(f"../output/integrins/grid_id0/run_0/visuals/img_{n}.png")
         plt.close()
 
-    return 500 * force * dt + np.sqrt(D * dt) * np.random.randn()
+    noise = np.sqrt(D * dt) * np.random.randn()
+    return 500 * force * dt + noise
 
 
 def polarity_potential(cell, mp):

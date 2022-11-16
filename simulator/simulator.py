@@ -101,12 +101,12 @@ class Simulator:
                 cms = pd.concat([cms, pd.DataFrame([cell.cm[1]], columns=["x", "y"])])
 
             # view the simulation box
-            # if n % simbox.n_view == 0:
-            #     Figure.view_simbox(
-            #         cell,
-            #         chi,
-            #         os.path.join(paths["figures"], f"img_{n}.png"),
-            #     )
+            if n % simbox.n_view == 0:
+                Figure.view_simbox(
+                    cell,
+                    chi,
+                    os.path.join(paths["figures"], f"img_{n}.png"),
+                )
 
             # set polarity and active force modality based on time step n
             force_modality = "integrins"

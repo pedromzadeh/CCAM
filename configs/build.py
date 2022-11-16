@@ -4,8 +4,10 @@ import os
 
 pol_type = sys.argv[1]
 
-SIZE = 1
-default_cell_tup = (6, 0.9, 0.48)
+SIZE = 5
+
+# beta, gamma, A
+default_cell_tup = (500, 0.9, 0.48)
 default_cell_tuples = list((default_cell_tup,) * SIZE)
 
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{pol_type}")
@@ -29,7 +31,7 @@ for id in range(SIZE):
         N_wetting=500,
         g=2,
         alpha=0.5,
-        D=0.002,
+        D=0.01,
         J=3,
         lam=0.8,
         polarity_mode=str(pol_type).upper(),

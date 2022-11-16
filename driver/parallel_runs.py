@@ -8,21 +8,17 @@ pol_type = sys.argv[2]
 
 # define a simulator object
 simulator = Simulator()
-n_workers = 48
+n_workers = 3
 
-# run a total of 2*n_workers simulations
-for batch_id in range(1):
-    processes = [
-        multiprocessing.Process(
-            target=simulator.execute, args=[run_id, grid_id, pol_type]
-        )
-        for run_id in range(batch_id * n_workers, (batch_id + 1) * n_workers)
-    ]
+processes = [
+    multiprocessing.Process(target=simulator.execute, args=[0, id + grid_id, pol_type])
+    for id in range(n_workers)
+]
 
-    # begin each process
-    for p in processes:
-        p.start()
+# begin each process
+for p in processes:
+    p.start()
 
-    # wait to proceed until all finish
-    for p in processes:
-        p.join()
+# wait to proceed until all finish
+for p in processes:
+    p.join()

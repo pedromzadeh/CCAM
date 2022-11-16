@@ -170,10 +170,38 @@ def FFCR(cells, i, t, n_collision, tau_CR=1.5, tau_CG=3.0):
     return term_CG * dt + term_CR * dt + noise
 
 
-def integrin(cell, mp, n):
+def integrin(cell, mp, interpolate=True, timestep=None, plot=False):
+    """
+    Polarity mechanism in which the polarity vector seeks where micropattern
+    exists. The internal dynamics is governed by a potential energy.
+
+    Parameters
+    ----------
+    cell : Cell object
+        Cell in question.
+
+    mp : np.ndarray of shape (n_mesh, n_mesh)
+        Defines the micropattern.
+
+    interpolate : bool, optional
+        Whether force at polarity angle is interpolated, by default True.
+
+    timestep : int, optional
+        Current timestep in the simulation, by default None.
+
+    plot : bool, optional
+        Whether to plot potential, force, and simbox view, by default False.
+
+    Returns
+    -------
+    float
+        Change incurred in polarity during one time step.
+    """
     # unpack
     D = cell.D
     dt = cell.simbox.dt
+    pol_ang = cell.theta
+    beta = cell.beta
 
     # omega is the angles associated with the cell's contour
     omega, U_omega = polarity_potential(cell, mp)
@@ -181,57 +209,72 @@ def integrin(cell, mp, n):
     # force due to this potential
     F_omega = -np.gradient(U_omega, np.mean(np.diff(omega)))
 
-    # find omega closest to current polarity angle to estimate force
-    pol_ang = cell.theta
-    closest_omega = min(omega, key=lambda x: abs(x - pol_ang))
-    indx = list(omega).index(closest_omega)
-    force = F_omega[indx]
+    if interpolate:
+        force = np.interp(pol_ang, omega, F_omega)
+    else:
+        # find omega closest to pol_ang to estimate force
+        closest_omega = min(omega, key=lambda x: abs(x - pol_ang))
+        indx = list(omega).index(closest_omega)
+        force = F_omega[indx]
 
-    if n % 500 == 0:
-        import matplotlib.pyplot as plt
+    if plot:
+        assert timestep is not None
+        if timestep % 500 == 0:
+            import matplotlib.pyplot as plt
 
-        plt.subplot(121)
-        plt.plot(omega, U_omega, lw=3, color="black", alpha=0.7)
-        plt.ylabel(r"$\mathcal{U}[\omega]$")
-        plt.xlabel(r"$\omega$")
-        plt.title(
-            f"Force = {500 * force:.3f}\npol angle = {cell.theta:.2f}\nclosest omega = {closest_omega:.2f}\n"
-        )
-        plt.ylim([-1.5, 0.5])
+            plt.figure(figsize=(10, 3))
 
-        plt.subplot(122)
-        L = cell.simbox.L_box
-        plt.imshow(
-            cell.phi, cmap="Greys", origin="lower", extent=[0, L, 0, L], alpha=0.5
-        )
+            plt.subplot(131)
+            plt.plot(omega, U_omega, lw=3, color="black", alpha=0.7)
+            plt.vlines(pol_ang, -1.5, 0.5, linestyles=["dashed"], colors=["green"])
+            plt.ylabel(r"$\mathcal{U}[\omega]$")
+            plt.xlabel(r"$\omega$")
+            plt.ylim([-1.5, 0.5])
 
-        plt.contour(cell.phi, levels=[0.5], extent=[0, L, 0, L], colors="black")
+            plt.subplot(132)
+            plt.plot(omega, F_omega, lw=3, color="black", alpha=0.7)
+            plt.vlines(pol_ang, -1.5, 0.5, linestyles=["dashed"], colors=["green"])
+            plt.hlines(
+                force, omega.min(), omega.max(), linestyles=["dashed"], colors=["red"]
+            )
+            plt.ylabel(r"$F[\omega]$")
+            plt.xlabel(r"$\omega$")
 
-        xcm, ycm = cell.cm[1]
-        px, py = [np.cos(cell.theta), np.sin(cell.theta)]
-        vx, vy = cell.v_cm
-        rx, ry = cell.r_CR
+            plt.subplot(133)
+            L = cell.simbox.L_box
+            plt.imshow(
+                cell.phi, cmap="Greys", origin="lower", extent=[0, L, 0, L], alpha=0.5
+            )
 
-        plt.quiver(
-            xcm,
-            ycm,
-            px,
-            py,
-            angles="xy",
-            scale_units="xy",
-            color="blue",
-            label="Polarity",
-            alpha=0.7,
-        )
+            plt.contour(cell.phi, levels=[0.5], extent=[0, L, 0, L], colors="black")
 
-        plt.contour(mp, levels=[0.5], extent=[0, L, 0, L])
-        plt.axis("equal")
+            xcm, ycm = cell.cm[1]
+            px, py = [np.cos(cell.theta), np.sin(cell.theta)]
+            vx, vy = cell.v_cm
+            rx, ry = cell.r_CR
 
-        plt.savefig(f"../output/integrins/grid_id0/run_0/visuals/img_{n}.png")
-        plt.close()
+            plt.quiver(
+                xcm,
+                ycm,
+                px,
+                py,
+                angles="xy",
+                scale_units="xy",
+                color="blue",
+                label="Polarity",
+                alpha=0.7,
+            )
+
+            plt.contour(mp, levels=[0.5], extent=[0, L, 0, L])
+            plt.axis("equal")
+            plt.tight_layout()
+            plt.savefig(
+                f"../output/integrins/grid_id0/run_0/visuals/img_{timestep}.png"
+            )
+            plt.close()
 
     noise = np.sqrt(D * dt) * np.random.randn()
-    return 500 * force * dt + noise
+    return beta * force * dt + noise
 
 
 def polarity_potential(cell, mp):

@@ -16,6 +16,6 @@ for i, indx in enumerate(sort_indx):
 
 print("Making a movie...")
 cmd = "ffmpeg -i ../output/integrins/grid_id0/run_0/visuals/img_%d.png \
-    -b:v 4M -s 500x500 -pix_fmt yuv420p integrins.mp4"
+    -b:v 4M -s 2500x2500 -pix_fmt yuv420p integrins.mp4"
 os.system(cmd)
 print("Done!")

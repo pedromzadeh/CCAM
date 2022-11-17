@@ -406,6 +406,44 @@ def predictive_power(X, y, predictor):
     )
 
 
+def calc_v_a_from_position(x, dt):
+    """
+    Calculates speed and acceleration from 1D position time series.
+
+    Parameters
+    ----------
+    x : arraylike
+        Time series of x position of center of mass, in microns.
+
+    dt : float
+        Time step between the data points, in minutes.
+
+    Returns
+    -------
+    df : pd.DataFrame
+        Columns are "x", "v", "a". The positions are the ones
+        associated with speed and acceleration values; i.e. x[:-2].
+
+    Note
+    ----
+    We're taking numerical derivatives to find these two quantities.
+    Speed calculation knocks out x[-1], and acceleration calculation
+    knocks out v[-1] -- thereby knocking out x[-2]. Also the convention
+    is v(n) = [x(n+1) - x(n)] / dt && a(n) = [v(n+1) - v(n)] / dt.
+    """
+
+    def _calc_v():
+        return np.diff(x) / dt
+
+    def _calc_a():
+        return np.diff(v) / dt
+
+    v = _calc_v()
+    a = _calc_a()
+    res = np.array([x[:-2], v[:-1], a])
+    return pd.DataFrame(res.T, columns=["x", "v", "a"])
+
+
 def _quadrant(x):
     if x.dv > 0 and x.dtheta > 0:
         return 1

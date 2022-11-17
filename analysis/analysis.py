@@ -444,6 +444,43 @@ def calc_v_a_from_position(x, dt):
     return pd.DataFrame(res.T, columns=["x", "v", "a"])
 
 
+def map_a(binned_df, nbins, x1bin_lbl, x2bin_lbl):
+
+    acc_map = np.empty(shape=(nbins, nbins))
+    acc_map[:] = np.nan
+
+    # x1 is along the x-axis
+    # x2 is along the y-axis
+    for (j, i), df in binned_df.groupby([x1bin_lbl, x2bin_lbl]):
+        acc_map[i, j] = df.a.mean()
+
+    return acc_map
+
+
+def get_bin_indices(df, nbins, x1=None, x2=None):
+
+    assert x1 is not None
+    assert x2 is not None
+
+    x1_lbl, x1_min, dx1 = x1
+    x2_lbl, x2_min, dx2 = x2
+
+    assert set([x1_lbl, x2_lbl]).issubset(df.columns)
+
+    df[f"{x1_lbl}_bin"] = np.floor((df[x1_lbl].values - x1_min) / dx1).astype("int")
+    df[f"{x2_lbl}_bin"] = np.floor((df[x2_lbl].values - x2_min) / dx2).astype("int")
+
+    # max values should be dropped by 1 in index value
+    df[f"{x1_lbl}_bin"] = df[f"{x1_lbl}_bin"].apply(
+        lambda x: x - 1 if x == nbins else x
+    )
+    df[f"{x2_lbl}_bin"] = df[f"{x2_lbl}_bin"].apply(
+        lambda x: x - 1 if x == nbins else x
+    )
+
+    return df
+
+
 def _quadrant(x):
     if x.dv > 0 and x.dtheta > 0:
         return 1

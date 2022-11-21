@@ -481,6 +481,42 @@ def get_bin_indices(df, nbins, x1=None, x2=None):
     return df
 
 
+def view_position_dist(cms, mu_factor):
+    from substrate.substrates import Substrate
+
+    sub_generator = Substrate(N_mesh=200, L_box=50)
+    chi = sub_generator.two_state_sub()
+
+    plt.figure(figsize=(6, 6))
+
+    ax = plt.subplot2grid((3, 3), (1, 0), rowspan=2)
+    ax.hist(cms.y.values, color="blue", orientation="horizontal", density=True)
+    ax.set_ylim([0, 50 * mu_factor])
+    ax.set_ylabel(r"$P(y)$")
+    ax.set_xlabel(r"$y\ (\mu$m)")
+
+    ax = plt.subplot2grid((3, 3), (0, 1), colspan=2)
+    ax.hist(cms.x.values, color="red", density=True)
+    ax.set_xlim([0, 50 * mu_factor])
+    ax.set_xlabel(r"$x\ (\mu$m)")
+    ax.set_ylabel(r"$P(x)$")
+
+    ax = plt.subplot2grid((3, 3), (1, 1), colspan=2, rowspan=2)
+    ax.scatter(cms.x, cms.y, c="orange", alpha=0.5, s=3)
+    ax.contour(
+        chi,
+        levels=[0.5],
+        colors=["black"],
+        linewidths=[3],
+        extent=[0, 50 * mu_factor, 0, 50 * mu_factor],
+    )
+    ax.axis("off")
+
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0.5, wspace=0.3)
+    plt.show()
+
+
 def _quadrant(x):
     if x.dv > 0 and x.dtheta > 0:
         return 1

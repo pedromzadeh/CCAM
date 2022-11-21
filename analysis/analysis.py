@@ -478,10 +478,8 @@ def get_bin_indices(df, nbins, x1=None, x2=None):
         lambda x: x - 1 if x == nbins else x
     )
 
-    return df
 
-
-def view_position_dist(cms, mu_factor):
+def view_position_dist(cms, mu_factor, cmap=None):
     from substrate.substrates import Substrate
 
     sub_generator = Substrate(N_mesh=200, L_box=50)
@@ -502,7 +500,10 @@ def view_position_dist(cms, mu_factor):
     ax.set_ylabel(r"$P(x)$")
 
     ax = plt.subplot2grid((3, 3), (1, 1), colspan=2, rowspan=2)
-    ax.scatter(cms.x, cms.y, c="orange", alpha=0.5, s=3)
+    if cmap is not None:
+        ax.scatter(cms.x, cms.y, c=cms.index, alpha=0.5, s=3, cmap=cmap)
+    else:
+        ax.scatter(cms.x, cms.y, c="orange", alpha=0.5, s=3)
     ax.contour(
         chi,
         levels=[0.5],

@@ -14,7 +14,8 @@ n_workers = 48
 for batch_id in range(1):
     processes = [
         multiprocessing.Process(
-            target=simulator.execute, args=[run_id, grid_id, pol_type]
+            target=simulator.execute,
+            args=[run_id, grid_id, pol_type, n_workers * grid_id + run_id],
         )
         for run_id in range(batch_id * n_workers, (batch_id + 1) * n_workers)
     ]

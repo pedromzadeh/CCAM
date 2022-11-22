@@ -8,7 +8,6 @@ from visuals.figure import Figure
 import glob
 import pandas as pd
 import numpy as np
-import time
 import os
 
 # assumption:
@@ -62,7 +61,7 @@ class Simulator:
     def __init__(self):
         self.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    def execute(self, run_id, grid_id, polarity_type):
+    def execute(self, run_id, grid_id, polarity_type, seed):
         """
         Executes one complete simulation run colliding two cells head-on.
 
@@ -76,12 +75,15 @@ class Simulator:
 
         polarity_type : str
             Specifies the polarity type being used.
+
+        seed : int or float
+            Sets the seed for the random generator assigned to this run.
         """
         # define various paths
         paths = self._define_paths(run_id, grid_id, polarity_type)
 
         # time based seeding so every function call gets a new generator
-        np.random.seed(int(time.time()) + 5000 * run_id)
+        np.random.seed(seed)
 
         # initialize the simulation box
         simbox = SimulationBox(paths["simbox"])

@@ -518,6 +518,28 @@ def view_position_dist(cms, mu_factor, cmap=None):
     plt.show()
 
 
+def get_hopping_times(df, mu_factor, min_factor, n_stats=500, dt=0.002):
+    # returns hopping times for this run in minutes
+    def _state(x):
+        x /= mu_factor
+        if np.fabs(x - 12.5) < 5:
+            return 0
+        elif np.fabs(x - 37.5) < 5:
+            return 1
+        else:
+            return -1
+
+    df = df.reset_index(drop=True)
+    df["state"] = df.x.apply(_state)
+    df["timestamp"] = df.index * n_stats * dt * min_factor
+    df = df.query("state != -1")
+    swaps = np.diff(df.state)
+    swap_inxs = np.where(swaps != 0)[0] + 1
+    times = df.timestamp.iloc[swap_inxs].to_numpy()
+    hopping_times = np.diff(times, prepend=0)
+    return hopping_times
+
+
 def _quadrant(x):
     if x.dv > 0 and x.dtheta > 0:
         return 1

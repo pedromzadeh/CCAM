@@ -115,6 +115,8 @@ class Simulator:
             hf.evolve_cell(cell, force_calculator, force_modality, chi, n)
 
         # simulation is done; store data
+        cms["D"] = cell.D
+        cms["R_eq"] = cell.R_eq
         cms.to_csv(paths["result"])
 
     def _build_system(self, simbox, cell_config):

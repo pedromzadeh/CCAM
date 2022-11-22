@@ -81,7 +81,7 @@ class Simulator:
         paths = self._define_paths(run_id, grid_id, polarity_type)
 
         # time based seeding so every function call gets a new generator
-        np.random.seed(int(time.time()) + run_id)
+        np.random.seed(int(time.time()) + 5000 * run_id)
 
         # initialize the simulation box
         simbox = SimulationBox(paths["simbox"])

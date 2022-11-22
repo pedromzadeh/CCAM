@@ -1,6 +1,6 @@
 echo "Removing output/"
 rm ../output -rf
 
-echo "Finished removing output. Now running 11 * 48 collisions"
-sbatch --array=0-10 prw_job.slurm
+echo "Finished removing output. Now running 48 collisions per submission"
+sbatch --array=0-89 job.slurm
 sqme

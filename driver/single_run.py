@@ -8,4 +8,4 @@ pol_type = sys.argv[2]
 
 # define a simulator object
 simulator = Simulator()
-simulator.execute(0, grid_id, pol_type)
+simulator.execute(0, grid_id, pol_type, 100)

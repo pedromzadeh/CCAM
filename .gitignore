@@ -10,3 +10,4 @@ examples/
 driver/*.out
 *.mp4
 driver/test.ipynb
+driver/data

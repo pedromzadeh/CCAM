@@ -9,6 +9,7 @@ import glob
 import pandas as pd
 import numpy as np
 import os
+import time
 
 # assumption:
 #   --> cell.id == 0 is the left cell
@@ -83,7 +84,7 @@ class Simulator:
         paths = self._define_paths(run_id, grid_id, polarity_type)
 
         # time based seeding so every function call gets a new generator
-        np.random.seed(seed)
+        np.random.seed(seed + int(time.time()))
 
         # initialize the simulation box
         simbox = SimulationBox(paths["simbox"])

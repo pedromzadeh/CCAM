@@ -11,5 +11,5 @@ echo "Finished removing output. Now running 48 collisions per submission"
 #     sleep 1
 # done
 
-sbatch --array=0-$GID job.slurm
+sbatch --array=0-$1 job.slurm
 sqme

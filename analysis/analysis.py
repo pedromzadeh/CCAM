@@ -488,16 +488,16 @@ def view_position_dist(cms, mu_factor, cmap=None):
     plt.figure(figsize=(6, 6))
 
     ax = plt.subplot2grid((3, 3), (1, 0), rowspan=2)
-    ax.hist(cms.y.values, color="blue", orientation="horizontal", density=True)
+    ax.hist(cms.y.values, bins=50, color="blue", orientation="horizontal")
     ax.set_ylim([0, 50 * mu_factor])
-    ax.set_ylabel(r"$P(y)$")
+    ax.set_ylabel("Counts")
     ax.set_xlabel(r"$y\ (\mu$m)")
 
     ax = plt.subplot2grid((3, 3), (0, 1), colspan=2)
-    ax.hist(cms.x.values, color="red", density=True)
+    ax.hist(cms.x.values, bins=50, color="red")
     ax.set_xlim([0, 50 * mu_factor])
     ax.set_xlabel(r"$x\ (\mu$m)")
-    ax.set_ylabel(r"$P(x)$")
+    ax.set_ylabel("Counts")
 
     ax = plt.subplot2grid((3, 3), (1, 1), colspan=2, rowspan=2)
     if cmap is not None:

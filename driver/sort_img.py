@@ -3,8 +3,8 @@ from glob import glob
 
 import numpy as np
 
-rid = 0
-for grid_id in [100, 200, 300, 624, 148, 867]:
+rid = 40
+for grid_id in [141]:
 
     files = glob(f"../output/integrins/grid_id{grid_id}/run_{rid}/visuals/*.png")
     ids = [int(f.split("/")[-1].split("_")[1].split(".")[0]) for f in files]
@@ -18,7 +18,6 @@ for grid_id in [100, 200, 300, 624, 148, 867]:
         os.system(cmd)
 
     print("Making a movie...")
-    cmd = f"ffmpeg -i ../output/integrins/grid_id{grid_id}/run_{rid}/visuals/ \
-        img_%d.png -b:v 4M -s 500x500 -pix_fmt yuv420p mov_{grid_id}.mp4"
+    cmd = f"ffmpeg -i ../output/integrins/grid_id{grid_id}/run_{rid}/visuals/img_%d.png -b:v 4M -s 500x500 -pix_fmt yuv420p mov_{grid_id}.mp4"
     os.system(cmd)
     print("Done!")

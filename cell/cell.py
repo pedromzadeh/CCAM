@@ -128,6 +128,8 @@ class Cell:
         self.v_cm = np.array([0, 0])
         self.r_CR = np.array([0, 0])
 
+        self.p_field = None
+
     def _create(self):
         """
         Computes the cell's phase-field from intial values and sets self.phi.

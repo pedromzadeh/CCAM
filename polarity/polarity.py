@@ -315,6 +315,37 @@ def polarity_potential(cell, mp):
     return angles, pol_pot
 
 
+def adaptive_pol_field(cell, dphi_dt, tau=1):
+    """
+    Returns the change in the cell's polarization field as governed
+    by the Integrin Model v2.0.
+
+    Parameters
+    ----------
+    cell : Cell object
+        The cell whose polarization field is to update.
+
+    dphi_dt : np.ndarray of shape (N_mesh, N_mesh)
+        The change in cell shape experienced during this timestep.
+
+    tau : float, optional
+        Specifies the timescale over which the field decays,
+        by default 1.
+
+    Returns
+    -------
+    np.ndarray of shape (N_mesh, N_mesh)
+        The change in the field.
+    """
+    p_field = cell.p_field
+    phi = cell.phi
+    dt = cell.simbox.dt
+    dx = cell.simbox.dx
+    D = cell.D
+    noise = np.sqrt(4 * D**2 * dt / dx**2) * np.random.randn(*phi.shape)
+    return dt * phi * dphi_dt - dt / tau * p_field + noise * phi
+
+
 def _Heaviside(x):
     if x >= 0:
         return 1

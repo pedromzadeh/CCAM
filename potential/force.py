@@ -92,9 +92,9 @@ class Force:
         """
         dFch_dphi = self.cahn_hilliard_func_deriv(cell)
         dFarea_dphi = self.area_func_deriv(cell)
-        # dFchi_dphi = self.substrate_int_func_deriv(cell)
+        dFchi_dphi = self.substrate_int_func_deriv(cell)
 
-        return dFch_dphi + dFarea_dphi
+        return dFch_dphi + dFarea_dphi + dFchi_dphi
 
     def constant_motility_force(self, cell):
         """

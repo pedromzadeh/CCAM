@@ -142,3 +142,36 @@ class Force:
         fy_motil = magnitude * p[1]
 
         return fx_motil, fy_motil
+
+    def cyto_motility_force(cell, grad_phi, mp):
+        """
+        Computes cytoskeletal force due to polarization field.
+
+        Parameters
+        ----------
+        cell : Cell object
+            The cell in question.
+
+        grad_phi : np.ndarray of shape (N_mesh, N_mesh)
+            Gradient of the cell field.
+
+        mp : np.ndarray of shape (N_mesh, N_mesh)
+            The field for the micropattern.
+
+        Returns
+        -------
+        tuple
+            fx_motil : ndarray of shape (N_mesh, N_mesh)
+            fy_motil : ndarray of shape (N_mesh, N_mesh)
+        """
+        norm_grad_phi = np.sqrt(np.sum(grad_phi * grad_phi, axis=0))
+        n_field = -1 * grad_phi / (norm_grad_phi + 1e-10)
+        phi = cell.phi
+        p_field = cell.p_field
+        fx_motil = (
+            cell.alpha * p_field * phi**2 * (1 - phi) ** 2 * (1 - mp) * n_field[0]
+        )
+        fy_motil = (
+            cell.alpha * p_field * phi**2 * (1 - phi) ** 2 * (1 - mp) * n_field[1]
+        )
+        return fx_motil, fy_motil

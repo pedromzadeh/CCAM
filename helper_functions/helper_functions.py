@@ -156,7 +156,7 @@ def evolve_cell(cell, force, force_modality, mp, n):
     phi_i_next, dF_dphi = _update_field(cell, grad_phi, force)
     dphi_dt = (phi_i_next - phi) / dt
 
-    # theta_(n+1)
+    # polarity_(n+1)
     if cell.polarity_mode == "PRW":
         theta_i_next = cell.theta + polarity.PRW(cell)
 
@@ -170,7 +170,7 @@ def evolve_cell(cell, force, force_modality, mp, n):
         theta_i_next = cell.theta + polarity.integrin(cell, mp, n)
 
     elif cell.polarity_mode == "IMV2":
-        cell.p_field = cell.p_field + polarity.adaptive_pol_field(cell, dphi_dt)
+        p_field_next = cell.p_field + polarity.adaptive_pol_field(cell, dphi_dt)
 
     else:
         raise ValueError(f"{cell.polarity_mode} invalid.")
@@ -194,7 +194,7 @@ def evolve_cell(cell, force, force_modality, mp, n):
 
     # new polarity
     # needed to cast angle to [-pi : pi]
-    p = [np.cos(theta_i_next), np.sin(theta_i_next)]
+    # p = [np.cos(theta_i_next), np.sin(theta_i_next)]
 
     # compute thermodynamic forces at time n
     fx_thermo = dF_dphi * grad_x
@@ -202,8 +202,10 @@ def evolve_cell(cell, force, force_modality, mp, n):
 
     # UPDATE class variables now
     cell.phi = phi_i_next
+    if force_modality == "IMV2":
+        cell.p_field = p_field_next
     cell.contour = find_contour(cell.phi)
-    cell.theta = np.arctan2(p[1], p[0])
+    # cell.theta = np.arctan2(p[1], p[0])
     cell.cm = compute_CM(cell)
     cell.v_cm = compute_v_CM(cell)
     cell.vx = (fx_thermo + fx_motil) / eta

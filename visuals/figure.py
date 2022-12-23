@@ -62,3 +62,31 @@ class Figure:
         plt.axis("equal")
         plt.savefig(path)
         plt.close()
+
+    @classmethod
+    def view_pol_field(cls, cell, path=None):
+
+        phi = cell.phi
+        p_field = cell.p_field
+        L_box = cell.simbox.L_box
+
+        plt.figure(figsize=(3, 3), dpi=150)
+        plt.imshow(
+            p_field, extent=[0, L_box, 0, L_box], origin="lower", cmap="coolwarm"
+        )
+        cbar = plt.colorbar()
+        cbar.set_label(r"$\mathbb{P}\equiv \phi \rho$")
+        plt.contour(
+            phi,
+            levels=[0.5],
+            extent=[0, L_box, 0, L_box],
+            origin="lower",
+            linewidths=[3],
+            colors=["black"],
+        )
+
+        if path is not None:
+            plt.savefig(path)
+            plt.close()
+        else:
+            plt.show()

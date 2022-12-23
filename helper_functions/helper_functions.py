@@ -149,9 +149,12 @@ def evolve_cell(cell, force, force_modality, mp, n):
     grad_x, grad_y, _ = compute_gradients(cell.phi, cell.simbox.dx)
     grad_phi = np.array([grad_x, grad_y])
     eta = cell.eta
+    phi = cell.phi
+    dt = cell.simbox.dt
 
     # phi_(n+1)
     phi_i_next, dF_dphi = _update_field(cell, grad_phi, force)
+    dphi_dt = (phi_i_next - phi) / dt
 
     # theta_(n+1)
     if cell.polarity_mode == "PRW":
@@ -166,6 +169,9 @@ def evolve_cell(cell, force, force_modality, mp, n):
     elif cell.polarity_mode == "INTEGRINS":
         theta_i_next = cell.theta + polarity.integrin(cell, mp, n)
 
+    elif cell.polarity_mode == "IMV2":
+        cell.p_field = cell.p_field + polarity.adaptive_pol_field(cell, dphi_dt)
+
     else:
         raise ValueError(f"{cell.polarity_mode} invalid.")
 
@@ -175,6 +181,9 @@ def evolve_cell(cell, force, force_modality, mp, n):
 
     if force_modality == "integrins":
         fx_motil, fy_motil = force.integrin_motility_force(cell, grad_phi, mp)
+
+    if force_modality == "IMV2":
+        fx_motil, fy_motil = force.cyto_motility_force(cell, grad_phi)
 
     else:
         warnings.warn(

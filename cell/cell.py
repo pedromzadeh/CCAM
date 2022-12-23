@@ -68,6 +68,10 @@ class Cell:
     self.cm : ndarray of shape (2, 2)
         Rows are previous and current CM, respectively, with ordering (x, y).
 
+    self.p_field : ndarray of shape (N_mesh, N_mesh)
+        The cell's polarization field, which models cytoskeletal actin dynamics.
+        This is useful for the Integrin Models of cell polarity.
+
     self.theta : float
         Defines cell polarity direction, in radians [-pi : pi].
 
@@ -120,6 +124,7 @@ class Cell:
         self.W = None
         self.contour = hf.find_contour(self.phi)
         self.cm = np.array([self.center, self.center])
+        self.p_field = None
 
         # physical features of the cell
         self.vx = np.zeros((_sim_box_obj.N_mesh, _sim_box_obj.N_mesh))
@@ -127,8 +132,6 @@ class Cell:
         self.theta = np.random.rand() * np.pi
         self.v_cm = np.array([0, 0])
         self.r_CR = np.array([0, 0])
-
-        self.p_field = None
 
     def _create(self):
         """

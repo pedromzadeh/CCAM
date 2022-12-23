@@ -64,7 +64,7 @@ class Figure:
         plt.close()
 
     @classmethod
-    def view_pol_field(cls, cell, path=None):
+    def view_pol_field(cls, cell, chi, path=None):
 
         phi = cell.phi
         p_field = cell.p_field
@@ -78,6 +78,14 @@ class Figure:
         cbar.set_label(r"$\mathbb{P}\equiv \phi \rho$")
         plt.contour(
             phi,
+            levels=[0.5],
+            extent=[0, L_box, 0, L_box],
+            origin="lower",
+            linewidths=[3],
+            colors=["black"],
+        )
+        plt.contour(
+            chi,
             levels=[0.5],
             extent=[0, L_box, 0, L_box],
             origin="lower",

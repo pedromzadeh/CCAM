@@ -66,55 +66,15 @@ class Substrate:
     def __str__(self):
         return "\t" + " + You are currently using the {} substrate.".format(self.type)
 
-    def get_substrate(self, x, y, type):
-        """
-        Returns the confinement's phase-field.
-
-        Note that '_floor' is by default set at yB = 5.
-
-        Parameters
-        ----------
-        x : ndarray of shape (N_mesh, N_mesh)
-            The x grid positions.
-
-        y : ndarray of shape (N_mesh, N_mesh)
-            The y grid of positions.
-
-        type : str
-            Specifies the kind of confinement.
-
-        Returns
-        -------
-        ndarray of shape (N_mesh, N_mesh)
-            The confinement's phase-field.
-
-        Raises
-        ------
-        ValueError
-            Let's the user know if the requested confinement is not implemented.
-        """
-        if type == "rectangular":
-            return self._rectangular(x, y)
-        elif type == "floor":
-            return self._line(y)
-        elif type == "circular":
-            return self._circular(x, y)
-        elif type == "Y":
-            return self._Y(x, y)
-        elif type == "plus":
-            return self._plus(x, y)
-        else:
-            raise ValueError(f"Confinement of type {type} is not implemented.")
-
-    def _rectangular(self, x, y):
+    def rectangular(self, xL, xR, yB, yT):
         """rectangular confinement"""
         # controls inteface width of wall
         eps = self.xi
-        xL, xR = 5.5, 48
-        yB, yT = 5, 30
+        N_mesh = self.N_mesh
+        L_box = self.L_box
 
-        # floor substrate
-        chi = 0.5 * (1 - np.tanh((y - yB) / eps))
+        # lattice points
+        x, y = np.meshgrid(np.linspace(0, L_box, N_mesh), np.linspace(0, L_box, N_mesh))
 
         # a rectangular sub
         chi_y = 0.5 * ((1 - np.tanh((y - yB) / eps)) + (1 + np.tanh((y - yT) / eps)))
@@ -123,17 +83,25 @@ class Substrate:
 
         return chi
 
-    def _line(self, y, yB=5):
+    def line(self, yB=5):
         """floor confinement"""
-
-        # controls inteface width of wall
         eps = self.xi
+        N_mesh = self.N_mesh
+        L_box = self.L_box
+
+        # lattice points
+        x, y = np.meshgrid(np.linspace(0, L_box, N_mesh), np.linspace(0, L_box, N_mesh))
+
         return 0.5 * (1 - np.tanh((y - yB) / eps))
 
-    def _circular(self, x, y):
+    def circular(self, Rl=18, Rs=10):
         """circular confinement"""
+        N_mesh = self.N_mesh
         L_box = self.L_box
-        Rl, Rs = 18, 10
+
+        # lattice points
+        x, y = np.meshgrid(np.linspace(0, L_box, N_mesh), np.linspace(0, L_box, N_mesh))
+
         x_center, y_center = L_box / 2, L_box / 2
         a, b, c = 1, 1, 1
         x = x - x_center
@@ -147,8 +115,15 @@ class Substrate:
         chi = chi_1 + chi_2
         return chi
 
-    def _Y(self, x, y):
+    def Y(self):
         """Y substrate"""
+        eps = self.xi
+        N_mesh = self.N_mesh
+        L_box = self.L_box
+
+        # lattice points
+        x, y = np.meshgrid(np.linspace(0, L_box, N_mesh), np.linspace(0, L_box, N_mesh))
+
         width = 3
         eps = 0.5
         x = x - 25
@@ -182,8 +157,15 @@ class Substrate:
         chi = np.where(chi < 0, 0, chi)
         return chi
 
-    def _plus(self, x, y):
+    def plus(self):
         """+ substrate"""
+        eps = self.xi
+        N_mesh = self.N_mesh
+        L_box = self.L_box
+
+        # lattice points
+        x, y = np.meshgrid(np.linspace(0, L_box, N_mesh), np.linspace(0, L_box, N_mesh))
+
         width = 3
         eps = 0.5
         x = x - 25
@@ -207,7 +189,7 @@ class Substrate:
         xi = self.xi
 
         # lattice points
-        x, y = np.meshgrid(np.linspace(0, 50, N_mesh), np.linspace(0, 50, N_mesh))
+        x, y = np.meshgrid(np.linspace(0, L_box, N_mesh), np.linspace(0, L_box, N_mesh))
 
         # index of the two squares, used for symmetric positioning
         ind = [1, 3]

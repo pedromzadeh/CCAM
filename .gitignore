@@ -2,12 +2,7 @@
 .vscode
 *__pycache__/
 output/
-configs/sva/
-configs/ffcr/
-configs/prw/
-configs/integrins/
-examples/
+configs/IM/
 driver/*.out
 *.mp4
-driver/test.ipynb
 driver/data

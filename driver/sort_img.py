@@ -1,23 +1,25 @@
+import numpy as np
 import os
 from glob import glob
 
-import numpy as np
 
-rid = 40
+rid = [40]
 for grid_id in [141]:
+    for run_id in rid:
+        root = f"../output/IM/grid_id{grid_id}/run_{run_id}/visuals"
+        files = glob(os.path.join(root, "*.png"))
 
-    files = glob(f"../output/integrins/grid_id{grid_id}/run_{rid}/visuals/*.png")
-    ids = [int(f.split("/")[-1].split("_")[1].split(".")[0]) for f in files]
+        ids = [int(f.split("/")[-1].split("_")[1].split(".")[0]) for f in files]
 
-    sort_indx = np.argsort(ids)
+        sort_indx = np.argsort(ids)
 
-    for i, indx in enumerate(sort_indx):
-        curr_file = files[indx]
-        new_file = f"../output/integrins/grid_id{grid_id}/run_{rid}/visuals/img_{i}.png"
-        cmd = f"mv {curr_file} {new_file}"
+        for i, indx in enumerate(sort_indx):
+            curr_file = files[indx]
+            new_file = f"{root}/img_{i}.png"
+            cmd = f"mv {curr_file} {new_file} > dump.txt"
+            os.system(cmd)
+
+        print(f"Making a movie for grid {grid_id} and run {run_id}...")
+        cmd = f"ffmpeg -i {root}/img_%d.png -b:v 4M -s 800x800 -pix_fmt yuv420p \
+            -filter:v 'setpts=PTS*4' {root}/mov.mp4 -y -hide_banner -loglevel fatal"
         os.system(cmd)
-
-    print("Making a movie...")
-    cmd = f"ffmpeg -i ../output/integrins/grid_id{grid_id}/run_{rid}/visuals/img_%d.png -b:v 4M -s 500x500 -pix_fmt yuv420p mov_{grid_id}.mp4"
-    os.system(cmd)
-    print("Done!")

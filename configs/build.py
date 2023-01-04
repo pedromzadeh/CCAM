@@ -1,53 +1,50 @@
-import sys
+import numpy as np
 import yaml
 import os
-import numpy as np
 
-pol_type = sys.argv[1]
+pol_type = "IM"
+N_cells = 1
 
-subset = 30
-SIZE = subset * 3
+# parameters to sweep through
+#   - beta  : strength with which pol field responds to shape changes
+#   - tau   : timescale of pol field decay
+#   - D     : magnitude of noise
 
-# beta, gamma, A
-default_cell_tup = (500, 0.9, 0.48)
-default_cell_tuples = list((default_cell_tup,) * SIZE)
+betas = np.linspace(1, 1, 1)
+taus = np.linspace(1, 1, 1)
+Ds = np.linspace(0.1, 0.1, 1)
+SIZE = len(betas) * len(taus) * len(Ds)
+grid = np.meshgrid(betas, taus, Ds)
+varied_cell_tuples = list(zip(grid[0].flatten(), grid[1].flatten(), grid[2].flatten()))
+
+print(f"betas: {betas} \ntaus: {taus}\nDs: {Ds}\n")
+print(f"Total # of runs: {SIZE}")
 
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{pol_type}")
-centers = [12.5, 25]
 
-# grid search over cell size and angular noise
-Ds = [0.05, 0.1, 0.5]
-Rs = [3.5]
-
-Ds = [[e] * subset for e in Ds]
-Rs = [[e] * SIZE for e in Rs]
-
-Ds = np.array(Ds).reshape(-1)
-Rs = np.array(Rs).reshape(-1)
-
-for id, D, R in list(zip(range(SIZE), Ds, Rs)):
+for id in range(SIZE):
     path = os.path.join(root, f"grid_id{id}")
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
 
-    beta, gamma, A = default_cell_tup
-    config = dict(
-        id=0,
-        center=centers,
-        gamma=gamma,
-        A=A,
-        beta=beta,
-        R_eq=float(R),
-        R_init=3.5,
-        eta=0.5,
-        N_wetting=500,
-        g=2,
-        alpha=0.5,
-        D=float(D),
-        J=3,
-        lam=0.8,
-        polarity_mode=str(pol_type).upper(),
-    )
+    for cell_id in range(N_cells):
+        beta, tau, D = list(map(float, varied_cell_tuples[id]))
+        config = dict(
+            center=[12.5, 25],
+            gamma=1.0,
+            A=0,
+            R_eq=4,
+            R_init=4,
+            eta=0.5,
+            g=2,
+            lam=0.8,
+            N_wetting=500,
+            id=cell_id,
+            polarity_mode=str(pol_type).upper(),
+            beta=beta,
+            tau=tau,
+            D=D,
+        )
 
-    with open(os.path.join(path, f"cell{0}.yaml"), "w") as yfile:
-        yaml.dump(config, yfile)
+        with open(os.path.join(path, f"cell{cell_id}.yaml"), "w") as yfile:
+            yaml.dump(config, yfile)

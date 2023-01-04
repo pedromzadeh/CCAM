@@ -35,16 +35,16 @@ class Cell:
         Specifies cell-substrate strength of repulsion.
 
     self.beta : float
-        Specifies strength with which cell generates protusions on substrate.
+        Specifies how strongly shape changes affect the polarization field.
 
     self.alpha : float
-        Specifies the strength of cell self-propulsion.
+        Specifies the magnitude of motility force.
+
+    self.tau : float
+        Specifies the decay timescale of the polarization field.
 
     self.D : float
         Specifies cell diffusion coefficient.
-
-    self.J : float
-        Specifies strength of polarity alignment to cell velocity.
 
     self.lam : float
         Specifies the phase field interfacial thickness.
@@ -70,19 +70,13 @@ class Cell:
 
     self.p_field : ndarray of shape (N_mesh, N_mesh)
         The cell's polarization field, which models cytoskeletal actin dynamics.
-        This is useful for the Integrin Models of cell polarity.
-
-    self.theta : float
-        Defines cell polarity direction, in radians [-pi : pi].
+        This is rho * phi.
 
     self.v_cm : ndarray of shape (2,)
         Cell center of mass velocity (v_cm_x, v_cm_y).
 
     self.vx, self.vy : ndarray of shape (N_mesh, N_mesh)
         Specify the velocity fields.
-
-    self.r_CR : ndarray of shape (2,)
-        Defines the direction due to contact inhibition of locomotion (x, y).
 
     self.simbox : SimulationBox object
         Directly gives each cell access to simulation box parameters.
@@ -124,14 +118,12 @@ class Cell:
         self.W = None
         self.contour = hf.find_contour(self.phi)
         self.cm = np.array([self.center, self.center])
-        self.p_field = None
+        self.p_field = np.random.uniform(0, 1, size=self.phi.shape) * self.phi
 
         # physical features of the cell
         self.vx = np.zeros((_sim_box_obj.N_mesh, _sim_box_obj.N_mesh))
         self.vy = np.zeros((_sim_box_obj.N_mesh, _sim_box_obj.N_mesh))
-        self.theta = np.random.rand() * np.pi
         self.v_cm = np.array([0, 0])
-        self.r_CR = np.array([0, 0])
 
     def _create(self):
         """
@@ -164,8 +156,8 @@ class Cell:
         self.beta = config["beta"]
         self.alpha = config["alpha"]
         self.D = config["D"]
-        self.J = config["J"]
         self.lam = config["lam"]
         self.polarity_mode = config["polarity_mode"]
         self.N_wetting = config["N_wetting"]
         self.eta = config["eta"]
+        self.tau = config["tau"]

@@ -37,24 +37,6 @@ class Simulator:
     _build_system(self, simbox)
         Builds the cell and substrate system.
 
-    _set_polarity_angle(self, cells, n)
-        Sets the polarity of the cells.
-
-    _inside_simbox(self, cells)
-        Determines if cells are inside the box.
-
-    _collision_detected(self, cells)
-        Determines whether collision is detected.
-
-    _collision_orientation(self, cells)
-        Determines the orientation of collision.
-
-    _proper_train_formed(self, cells, ref_pt)
-        Decides whether a proper train of cells is formed.
-
-    _train_direction(self, cells)
-        Determines the direction of the train.
-
     _define_paths(self)
         Setup various paths for the simulator to use.
     """
@@ -105,17 +87,14 @@ class Simulator:
 
             # view the simulation box
             if n % simbox.n_view == 0:
-                Figure.view_simbox(
+                Figure.view_pol_field(
                     cell,
                     chi,
                     os.path.join(paths["figures"], f"img_{n}.png"),
                 )
 
-            # set polarity and active force modality based on time step n
-            force_modality = "integrins"
-
             # update each cell to the next time step
-            hf.evolve_cell(cell, force_calculator, force_modality, chi, n)
+            hf.evolve_cell(cell, force_calculator, chi, n)
 
         # simulation is done; store data
         cms["D"] = cell.D
@@ -150,7 +129,7 @@ class Simulator:
 
         # define base substrate
         sub = Substrate(N_mesh, L_box, xi=0.2)
-        chi = sub.two_state_sub()
+        chi = sub.rectangular(xL=1, xR=L_box - 1, yB=1, yT=L_box - 1)
 
         # read cell config files && ensure only 2 exist
         # IMPORTANT -- glob returns arbitrary order, sort
@@ -168,9 +147,6 @@ class Simulator:
     def _define_paths(self, run_id, grid_id, polarity_type):
         SIMBOX_CONFIG = os.path.join(self.root_dir, "configs/simbox.yaml")
         ENERGY_CONFIG = os.path.join(self.root_dir, "configs/energy.yaml")
-
-        if polarity_type not in ["sva", "ffcr", "prw", "integrins"]:
-            raise KeyError(f"Polarity mode {polarity_type} is invalid.")
 
         CELL_CONFIG = os.path.join(
             self.root_dir, f"configs/{polarity_type}/grid_id{grid_id}"

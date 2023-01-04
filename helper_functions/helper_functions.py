@@ -1,4 +1,3 @@
-import warnings
 from polarity import polarity
 from skimage import measure
 import numpy as np
@@ -118,12 +117,12 @@ def compute_gradients(field, dx):
     return (grad_x, grad_y, laplacian)
 
 
-def evolve_cell(cell, force, force_modality, mp, n):
+def evolve_cell(cell, force, mp):
     """
-    Evolves the cell by updating its class variables from time t to time t_dt.
+    Evolves the cell by updating its class variables from time t to time t + dt.
     Attributes updated are
     1. field
-    2. polarity
+    2. polarization field == rho * phi
     3. center of mass
     4. center of mass speed
     5. velocity fields, v_x and v_y
@@ -136,10 +135,6 @@ def evolve_cell(cell, force, force_modality, mp, n):
 
     force : Force object
         Gives access to computing forces.
-
-    force_modality : str
-        Specifies what kind of active force the cell generates, options are
-        'constant'.
 
     mp : Substrate object
         Specifies the micropattern.
@@ -156,45 +151,11 @@ def evolve_cell(cell, force, force_modality, mp, n):
     phi_i_next, dF_dphi = _update_field(cell, grad_phi, force)
     dphi_dt = (phi_i_next - phi) / dt
 
-    # polarity_(n+1)
-    if cell.polarity_mode == "PRW":
-        theta_i_next = cell.theta + polarity.PRW(cell)
-
-    elif cell.polarity_mode == "SVA":
-        theta_i_next = cell.theta + polarity.static_velocity_aligning(cell)
-
-    elif cell.polarity_mode == "DVA":
-        theta_i_next = cell.theta + polarity.dynamic_velocity_aligning(cell)
-
-    elif cell.polarity_mode == "INTEGRINS":
-        theta_i_next = cell.theta + polarity.integrin(cell, mp, n)
-
-    elif cell.polarity_mode == "IMV2":
-        p_field_next = cell.p_field + polarity.adaptive_pol_field(cell, dphi_dt)
-
-    else:
-        raise ValueError(f"{cell.polarity_mode} invalid.")
+    # polarization field (n+1)
+    p_field_next = cell.p_field + polarity.adaptive_pol_field(cell, dphi_dt)
 
     # compute motility forces at time n
-    if force_modality == "constant":
-        fx_motil, fy_motil = force.constant_motility_force(cell)
-
-    if force_modality == "integrins":
-        fx_motil, fy_motil = force.integrin_motility_force(cell, grad_phi, mp)
-
-    if force_modality == "IMV2":
-        fx_motil, fy_motil = force.cyto_motility_force(cell, grad_phi)
-
-    else:
-        warnings.warn(
-            f"force_modality == {force_modality} is not understood. \
-                Defaulting to fx_motil = 0, fy_motil = 0... BE AWARE!"
-        )
-        fx_motil, fy_motil = 0.0, 0.0
-
-    # new polarity
-    # needed to cast angle to [-pi : pi]
-    # p = [np.cos(theta_i_next), np.sin(theta_i_next)]
+    fx_motil, fy_motil = force.cyto_motility_force(cell, grad_phi, mp)
 
     # compute thermodynamic forces at time n
     fx_thermo = dF_dphi * grad_x
@@ -202,10 +163,8 @@ def evolve_cell(cell, force, force_modality, mp, n):
 
     # UPDATE class variables now
     cell.phi = phi_i_next
-    if force_modality == "IMV2":
-        cell.p_field = p_field_next
+    cell.p_field = p_field_next
     cell.contour = find_contour(cell.phi)
-    # cell.theta = np.arctan2(p[1], p[0])
     cell.cm = compute_CM(cell)
     cell.v_cm = compute_v_CM(cell)
     cell.vx = (fx_thermo + fx_motil) / eta

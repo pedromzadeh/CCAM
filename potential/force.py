@@ -96,54 +96,7 @@ class Force:
 
         return dFch_dphi + dFarea_dphi + dFchi_dphi
 
-    def constant_motility_force(self, cell):
-        """
-        Computes a constant motility force as $f = alpha * phi * p$
-
-        cell : Cell object
-            Cell in question.
-
-        Returns
-        -------
-        tuple
-            fx_motil : ndarray of shape (phi.shape[0], phi.shape[0])
-            fy_motil : ndarray of shape (phi.shape[0], phi.shape[0])
-        """
-        # obtain relevant variables at time n
-        phi_i = cell.phi
-        theta_i = cell.theta
-        p_i = [np.cos(theta_i), np.sin(theta_i)]
-
-        fx_motil = cell.alpha * phi_i * p_i[0]
-        fy_motil = cell.alpha * phi_i * p_i[1]
-        return fx_motil, fy_motil
-
-    def integrin_motility_force(self, cell, grad_phi, mp):
-
-        # field normal to the boundary
-        norm_grad_phi = np.sqrt(np.sum(grad_phi * grad_phi, axis=0))
-        n_field = -1 * grad_phi / (norm_grad_phi + 1e-10)
-
-        # make a field out of cell polarity
-        phi = cell.phi
-        p = [np.cos(cell.theta), np.sin(cell.theta)]
-        p_field = np.array([np.ones(phi.shape) * p[0], np.ones(phi.shape) * p[1]])
-
-        # denote front and rear of cell
-        p_dot_n = np.sum(p_field * n_field, axis=0)
-        cell_front = np.where(p_dot_n > 0, p_dot_n, 0)
-        cell_rear = np.where(p_dot_n < 0, p_dot_n, 0)
-
-        alpha_front = cell.alpha
-        alpha_rear = alpha_front * 0.5
-
-        magnitude = phi * (1 - mp) * (alpha_front * cell_front - alpha_rear * cell_rear)
-        fx_motil = magnitude * p[0]
-        fy_motil = magnitude * p[1]
-
-        return fx_motil, fy_motil
-
-    def cyto_motility_force(cell, grad_phi, mp):
+    def cyto_motility_force(self, cell, grad_phi, mp):
         """
         Computes cytoskeletal force due to polarization field.
 
@@ -156,7 +109,7 @@ class Force:
             Gradient of the cell field.
 
         mp : np.ndarray of shape (N_mesh, N_mesh)
-            The field for the micropattern.
+            The field for the micropatntern.
 
         Returns
         -------

@@ -39,6 +39,8 @@ for id in range(SIZE):
             g=2,
             lam=0.8,
             N_wetting=500,
+            alpha=1,
+            tau_mp=1,
             id=cell_id,
             polarity_mode=str(pol_type).upper(),
             beta=beta,

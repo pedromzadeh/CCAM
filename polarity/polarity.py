@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def adaptive_pol_field(cell, dphi_dt):
+def adaptive_pol_field(cell, dphi_dt, mp):
     """
     Returns the change in polarization field experienced in one timestep.
 
@@ -27,6 +27,12 @@ def adaptive_pol_field(cell, dphi_dt):
     D = cell.D
     beta = cell.beta
     tau = cell.tau  # x8 to get minutes
+    tau_x = cell.tau_mp
 
     noise = np.sqrt(4 * D**2 * dt / dx**2) * np.random.randn(*phi.shape)
-    return (dt * phi * beta * dphi_dt) - (dt / tau * p_field) + (noise * phi)
+    return (
+        (dt * phi * beta * dphi_dt)
+        - (dt / tau * p_field)
+        + (noise * phi)
+        - (dt / tau_x * mp * phi)
+    )

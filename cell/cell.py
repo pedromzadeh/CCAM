@@ -43,6 +43,10 @@ class Cell:
     self.tau : float
         Specifies the decay timescale of the polarization field.
 
+    self.tau_mp : float
+        Specifies the decay timescale of the polarization field
+        due to interaction with the micro-pattern (mp).
+
     self.D : float
         Specifies cell diffusion coefficient.
 
@@ -161,3 +165,4 @@ class Cell:
         self.N_wetting = config["N_wetting"]
         self.eta = config["eta"]
         self.tau = config["tau"]
+        self.tau_mp = config["tau_mp"]

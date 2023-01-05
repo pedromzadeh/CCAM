@@ -152,7 +152,7 @@ def evolve_cell(cell, force, mp):
     dphi_dt = (phi_i_next - phi) / dt
 
     # polarization field (n+1)
-    p_field_next = cell.p_field + polarity.adaptive_pol_field(cell, dphi_dt)
+    p_field_next = cell.p_field + polarity.adaptive_pol_field(cell, dphi_dt, mp)
 
     # compute motility forces at time n
     fx_motil, fy_motil = force.cyto_motility_force(cell, grad_phi, mp)

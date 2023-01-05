@@ -70,9 +70,13 @@ class Figure:
         p_field = cell.p_field
         L_box = cell.simbox.L_box
 
+        p_field_masked = np.ones(p_field.shape) * np.nan
+        i, j = np.where(phi >= 0.5)
+        p_field_masked[i, j] = p_field[i, j]
+
         plt.figure(figsize=(3, 3), dpi=150)
         plt.imshow(
-            p_field, extent=[0, L_box, 0, L_box], origin="lower", cmap="coolwarm"
+            p_field_masked, extent=[0, L_box, 0, L_box], origin="lower", cmap="coolwarm"
         )
         cbar = plt.colorbar()
         cbar.set_label(r"$\mathbb{P}\equiv \phi \rho$")

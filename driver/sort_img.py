@@ -3,8 +3,8 @@ import os
 from glob import glob
 
 
-rid = [40]
-for grid_id in [141]:
+rid = [0]
+for grid_id in [0]:
     for run_id in rid:
         root = f"../output/IM/grid_id{grid_id}/run_{run_id}/visuals"
         files = glob(os.path.join(root, "*.png"))

@@ -4,7 +4,7 @@ from simulator.simulator import Simulator
 
 # command line args
 grid_id = int(sys.argv[1])
-pol_type = sys.argv[2]
+pol_type = "IM"
 
 # define a simulator object
 simulator = Simulator()

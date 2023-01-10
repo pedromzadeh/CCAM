@@ -66,7 +66,8 @@ class Simulator:
         paths = self._define_paths(run_id, grid_id, polarity_type)
 
         # time based seeding so every function call gets a new generator
-        np.random.seed(seed + int(time.time()))
+        # np.random.seed(seed + int(time.time()))
+        np.random.seed(seed)
 
         # initialize the simulation box
         simbox = SimulationBox(paths["simbox"])
@@ -83,7 +84,14 @@ class Simulator:
 
             # collect statistics
             if n % simbox.n_stats == 0:
-                cms = pd.concat([cms, pd.DataFrame([cell.cm[1]], columns=["x", "y"])])
+                cms = pd.concat(
+                    [
+                        cms,
+                        pd.DataFrame(
+                            [[*cell.cm[1], *cell.v_cm]], columns=["x", "y", "vx", "vy"]
+                        ),
+                    ]
+                )
 
             # view the simulation box
             if n % simbox.n_view == 0:
@@ -94,7 +102,7 @@ class Simulator:
                 )
 
             # update each cell to the next time step
-            hf.evolve_cell(cell, force_calculator, chi, n)
+            hf.evolve_cell(cell, force_calculator, chi)
 
         # simulation is done; store data
         cms["D"] = cell.D
@@ -129,7 +137,8 @@ class Simulator:
 
         # define base substrate
         sub = Substrate(N_mesh, L_box, xi=0.2)
-        chi = sub.rectangular(xL=1, xR=L_box - 1, yB=1, yT=L_box - 1)
+        # chi = sub.rectangular(xL=15, xR=L_box - 15, yB=15, yT=L_box - 15)
+        chi = sub.two_state_sub()
 
         # read cell config files && ensure only 2 exist
         # IMPORTANT -- glob returns arbitrary order, sort

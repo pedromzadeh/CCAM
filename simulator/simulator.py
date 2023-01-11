@@ -136,11 +136,21 @@ class Simulator:
         N_mesh, L_box = simbox.N_mesh, simbox.L_box
 
         # define base substrate
-        sub = Substrate(N_mesh, L_box, xi=0.2)
-        # chi = sub.rectangular(xL=15, xR=L_box - 15, yB=15, yT=L_box - 15)
-        chi = sub.two_state_sub()
+        sub_config = simbox.sub_config
+        xi = sub_config["xi"]
+        kind = sub_config["kind"]
+        buffer = sub_config["buffer"]
+        sub = Substrate(N_mesh, L_box, xi)
+        if kind == "two-state":
+            chi = sub.two_state_sub()
+        elif kind == "rectangular":
+            chi = sub.rectangular(
+                xL=buffer, xR=L_box - buffer, yB=buffer, yT=L_box - buffer
+            )
+        else:
+            raise ValueError(f"{kind} for substrate is not understood.")
 
-        # read cell config files && ensure only 2 exist
+        # read cell config files && ensure only 2 existr
         # IMPORTANT -- glob returns arbitrary order, sort
         config_file = sorted(glob.glob(os.path.join(cell_config, "cell*")))
         if len(config_file) != 1:

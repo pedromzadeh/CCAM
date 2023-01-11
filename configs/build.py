@@ -12,22 +12,22 @@ N_cells = 1
 #   - tau   : timescale of pol field decay
 #   - D     : magnitude of noise
 
-betas = np.linspace(1, 2, 2)
-taus = np.linspace(1, 2, 2)
-Ds = np.linspace(0.1, 0.2, 2)
+betas = np.linspace(1, 1, 1)
+taus = np.linspace(5, 5, 1)
+Ds = np.linspace(0.1, 0.1, 1)
 
 default_dict = {
     "center": [[12.5, 25]],
-    "gamma": [1.0],
+    "gamma": [1.3],
     "A": [0],
     "R_eq": [4],
     "R_init": [4],
     "eta": [0.5],
-    "g": [2],
+    "g": [0],
     "lam": [0.8],
     "N_wetting": [500],
-    "alpha": [1],
-    "tau_mp": [1],
+    "alpha": [80],
+    "tau_mp": [0.1],
     "id": [0],
     "polarity_mode": [str(pol_type).upper()],
 }
@@ -51,5 +51,4 @@ for id, params in enumerate(grid):
         os.makedirs(path, exist_ok=True)
 
     with open(os.path.join(path, f"cell{0}.yaml"), "w") as yfile:
-        print(type(params))
         yaml.dump(params, yfile)

@@ -15,6 +15,10 @@ class SimulationBox:
                 - dt : timestep
                 - N_mesh : number of lattice sites
                 - L_box : physical size of the box.
+                - stat_collection_freq: frequency of data collection
+                - simbox_view_freq: frequency of plotting
+                - substrate: dict with keys "xi", "kind", "buffer".
+
             The resolution of the simulation is dx = L_box / (N_mesh - 1).
         """
         # read simulation box parameters
@@ -27,3 +31,4 @@ class SimulationBox:
         self.n_stats = config["stat_collection_freq"]
         self.n_view = config["simbox_view_freq"]
         self.dx = self.L_box / (self.N_mesh - 1)
+        self.sub_config = config["substrate"]

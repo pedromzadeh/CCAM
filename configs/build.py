@@ -33,9 +33,9 @@ default_dict = {
 }
 
 param_grid = {
-    "betas": list(map(float, betas)),
-    "taus": list(map(float, taus)),
-    "Ds": list(map(float, Ds)),
+    "beta": list(map(float, betas)),
+    "tau": list(map(float, taus)),
+    "D": list(map(float, Ds)),
 } | default_dict
 
 grid = list(ParameterGrid(param_grid))

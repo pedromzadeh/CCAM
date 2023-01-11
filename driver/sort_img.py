@@ -23,3 +23,5 @@ for grid_id in [0]:
         cmd = f"ffmpeg -i {root}/img_%d.png -b:v 4M -s 800x800 -pix_fmt yuv420p \
             -filter:v 'setpts=PTS*4' {root}/mov.mp4 -y -hide_banner -loglevel fatal"
         os.system(cmd)
+
+os.system("rm dump.txt")

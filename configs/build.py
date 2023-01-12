@@ -12,13 +12,12 @@ N_cells = 1
 #   - tau   : timescale of pol field decay
 #   - D     : magnitude of noise
 
-betas = np.linspace(1, 1, 1)
-taus = np.linspace(5, 5, 1)
-Ds = np.linspace(0.1, 0.1, 1)
+betas = np.linspace(0.6, 1.2, 2)
+taus = np.linspace(1, 5, 2)
+Ds = np.linspace(0.1, 0.2, 2)
 
 default_dict = {
-    "center": [[12.5, 25]],
-    "gamma": [1.3],
+    "gamma": [1.8],
     "A": [0],
     "R_eq": [4],
     "R_init": [4],

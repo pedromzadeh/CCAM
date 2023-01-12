@@ -146,6 +146,13 @@ class Cell:
     def _tanh(self, r, R, epsilon):
         return 1 / 2 + 1 / 2 * np.tanh(-(r - R) / epsilon)
 
+    def _init_center(self):
+        import time
+
+        np.random.seed(int(time.time()))
+        centers = [[12.5, 25], [37.5, 25]]
+        return centers[np.random.randint(0, 2)]
+
     def _load_parameters(self, path):
         with open(path, "r") as file:
             config = yaml.safe_load(file)
@@ -153,7 +160,7 @@ class Cell:
         self.id = config["id"]
         self.R_eq = config["R_eq"]
         self.R_init = config["R_init"]
-        self.center = config["center"]
+        self.center = self._init_center()
         self.gamma = config["gamma"]
         self.A = config["A"]
         self.g = config["g"]

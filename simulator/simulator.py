@@ -77,10 +77,6 @@ class Simulator:
         # carry out the simulation
         for n in range(simbox.sim_time):
 
-            # if cell has escaped, end simulation
-            if not self._cell_inside(cell, chi):
-                exit("Cell has escaped the sim box. Exiting run.")
-
             # collect statistics
             if n % simbox.n_stats == 0 and self._cell_whole(cell):
                 cms = pd.concat(
@@ -103,6 +99,10 @@ class Simulator:
 
             # update each cell to the next time step
             hf.evolve_cell(cell, force_calculator, chi)
+
+            # if cell has escaped, end simulation
+            if not self._cell_inside(cell, chi):
+                exit("Cell has escaped the sim box. Exiting run.")
 
         # simulation is done; store data
         cms["D"] = cell.D
@@ -205,7 +205,7 @@ class Simulator:
         cm = cell.cm[-1]
         x = int(cm[0] / cell.simbox.dx)
         y = int(cm[1] / cell.simbox.dx)
-        return mp[y, x] > 0.5
+        return mp[y, x] < 0.5
 
     def _cell_whole(self, cell):
         return len(cell.contour) == 1

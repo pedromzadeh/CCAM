@@ -29,7 +29,7 @@ def adaptive_pol_field(cell, dphi_dt, mp):
     tau = cell.tau  # x8 to get minutes
     tau_x = cell.tau_mp
 
-    noise = np.sqrt(4 * D**2 * dt / dx**2) * np.random.randn(*phi.shape)
+    noise = np.sqrt(4 * D**2 * dt / dx**2) * cell.rng.randn(*phi.shape)
     return (
         (dt * phi * beta * dphi_dt)
         - (dt / tau * p_field)

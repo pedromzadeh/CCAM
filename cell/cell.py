@@ -85,6 +85,10 @@ class Cell:
     self.simbox : SimulationBox object
         Directly gives each cell access to simulation box parameters.
 
+    self.rng : np.random.RandomState
+        Specifies an instance of random bit generator local to this Cell.
+        All calls for random numbers should be made from this generator.
+
     Methods
     -------
     __init__(self, config_file)
@@ -100,7 +104,7 @@ class Cell:
         Loads cell's hyperparameters from file.
     """
 
-    def __init__(self, config_file, _sim_box_obj):
+    def __init__(self, config_file, _sim_box_obj, seed):
         """
         Initializes the cell object with some hypterparameters and physical and
         spatial features.
@@ -112,7 +116,14 @@ class Cell:
 
         _sim_box_obj : SimulationBox object
             Gives access to simulation box parameters directly to each cell.
+
+        seed : int
+            Seeds the local RandomState generator.
         """
+
+        # random number generator local to this instance of Cell
+        self.rng = np.random.RandomState(seed=seed)
+
         # read cell hyperparameters from file
         self._load_parameters(config_file)
         self.simbox = _sim_box_obj
@@ -122,7 +133,7 @@ class Cell:
         self.W = None
         self.contour = hf.find_contour(self.phi)
         self.cm = np.array([self.center, self.center])
-        self.p_field = np.random.uniform(0, 1, size=self.phi.shape) * self.phi
+        self.p_field = self.rng.uniform(0, 1, size=self.phi.shape) * self.phi
 
         # physical features of the cell
         self.vx = np.zeros((_sim_box_obj.N_mesh, _sim_box_obj.N_mesh))
@@ -147,11 +158,8 @@ class Cell:
         return 1 / 2 + 1 / 2 * np.tanh(-(r - R) / epsilon)
 
     def _init_center(self):
-        import time
-
-        np.random.seed(int(time.time()))
         centers = [[12.5, 25], [37.5, 25]]
-        return centers[np.random.randint(0, 2)]
+        return centers[self.rng.randint(0, 2)]
 
     def _load_parameters(self, path):
         with open(path, "r") as file:

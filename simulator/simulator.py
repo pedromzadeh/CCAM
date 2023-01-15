@@ -7,9 +7,7 @@ from visuals.figure import Figure
 
 import glob
 import pandas as pd
-import numpy as np
 import os
-import time
 
 # assumption:
 #   --> cell.id == 0 is the left cell
@@ -46,7 +44,8 @@ class Simulator:
 
     def execute(self, run_id, grid_id, polarity_type, seed):
         """
-        Executes one complete simulation run colliding two cells head-on.
+        Executes one complete simulation run. This is a child process spawned
+        by multiprocessing.
 
         Parameters
         ----------
@@ -65,13 +64,9 @@ class Simulator:
         # define various paths
         paths = self._define_paths(run_id, grid_id, polarity_type)
 
-        # time based seeding so every function call gets a new generator
-        np.random.seed(seed + int(time.time()))
-        # np.random.seed(seed)
-
         # initialize the simulation box
         simbox = SimulationBox(paths["simbox"])
-        cell, chi = self._build_system(simbox, paths["cell"])
+        cell, chi = self._build_system(simbox, paths["cell"], cell_rng_seed=seed)
 
         # initialize the force calculator
         force_calculator = Force(paths["energy"])
@@ -102,7 +97,8 @@ class Simulator:
                 Figure.view_pol_field(
                     cell,
                     chi,
-                    os.path.join(paths["figures"], f"img_{n}.png"),
+                    dpi=75,
+                    path=os.path.join(paths["figures"], f"img_{n}.png"),
                 )
 
             # update each cell to the next time step
@@ -114,7 +110,7 @@ class Simulator:
         cms["tau"] = cell.tau
         cms.to_csv(paths["result"])
 
-    def _build_system(self, simbox, cell_config):
+    def _build_system(self, simbox, cell_config, cell_rng_seed):
         """
         Builds the substrate and cell system.
 
@@ -125,6 +121,9 @@ class Simulator:
 
         cell_config : str
             Path to directory containing cell's config.
+
+        cell_rng_seed : int
+            Sets the seed for local instance of Cell's bit generator.
 
         Returns
         -------
@@ -161,9 +160,9 @@ class Simulator:
         if len(config_file) != 1:
             raise ValueError("Ensure there is exactly 1 configuration file.")
 
-        # initialize cells with R_init at center
+        # initialize cells
         # set the cumulative substrate they will interact with
-        cell = Cell(config_file[0], simbox)
+        cell = Cell(config_file[0], simbox, cell_rng_seed)
         cell.W = 0.5 * cell.g * chi
 
         return cell, chi
@@ -203,7 +202,10 @@ class Simulator:
         )
 
     def _cell_inside(self, cell, mp):
-        return np.max(cell.phi * mp) < 0.2
+        cm = cell.cm[-1]
+        x = int(cm[0] / cell.simbox.dx)
+        y = int(cm[1] / cell.simbox.dx)
+        return mp[y, x] > 0.5
 
     def _cell_whole(self, cell):
         return len(cell.contour) == 1

@@ -65,9 +65,9 @@ class Cell:
     self.W : ndarray of shape (N_mesh, N_mesh)
         Cumulative substrate the cell sees and interacts with.
 
-    self.contour : list of ndarray, of shape (m, 2)
-        The x, y points defining the half-contour of the field, where m is the
-        number of such points.
+    self.contour : list of ndarray, of shape (s, m, 2)
+        The (y, x) points defining the 1/2-contour of the field, where m is the
+        number of such points and s is the number of closed contours.
 
     self.cm : ndarray of shape (2, 2)
         Rows are previous and current CM, respectively, with ordering (x, y).

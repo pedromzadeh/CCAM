@@ -83,7 +83,9 @@ class Simulator:
         for n in range(simbox.sim_time):
 
             # collect statistics
-            if n % simbox.n_stats == 0:
+            cell_inside = self._cell_inside(cell, chi)
+            cell_whole = self._cell_whole(cell)
+            if n % simbox.n_stats == 0 and cell_inside and cell_whole:
                 cms = pd.concat(
                     [
                         cms,
@@ -196,3 +198,9 @@ class Simulator:
             result=RESULT_PATH,
             figures=FIGURES_PATH,
         )
+
+    def _cell_inside(self, cell, mp):
+        return np.max(cell.phi * mp) < 0.2
+
+    def _cell_whole(self, cell):
+        return len(cell.contour) == 1

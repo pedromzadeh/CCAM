@@ -64,7 +64,7 @@ class Figure:
         plt.close()
 
     @classmethod
-    def view_pol_field(cls, cell, chi, path=None):
+    def view_pol_field(cls, cell, chi, dpi, path=None):
 
         phi = cell.phi
         p_field = cell.p_field
@@ -74,7 +74,7 @@ class Figure:
         i, j = np.where(phi >= 0.5)
         p_field_masked[i, j] = p_field[i, j]
 
-        plt.figure(figsize=(3, 3), dpi=150)
+        plt.figure(figsize=(3, 3), dpi=dpi)
         plt.imshow(
             p_field_masked, extent=[0, L_box, 0, L_box], origin="lower", cmap="coolwarm"
         )

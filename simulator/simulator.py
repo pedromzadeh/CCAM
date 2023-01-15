@@ -82,10 +82,12 @@ class Simulator:
         # carry out the simulation
         for n in range(simbox.sim_time):
 
+            # if cell has escaped, end simulation
+            if not self._cell_inside(cell, chi):
+                exit("Cell has escaped the sim box. Exiting run.")
+
             # collect statistics
-            cell_inside = self._cell_inside(cell, chi)
-            cell_whole = self._cell_whole(cell)
-            if n % simbox.n_stats == 0 and cell_inside and cell_whole:
+            if n % simbox.n_stats == 0 and self._cell_whole(cell):
                 cms = pd.concat(
                     [
                         cms,
@@ -108,7 +110,8 @@ class Simulator:
 
         # simulation is done; store data
         cms["D"] = cell.D
-        cms["R_eq"] = cell.R_eq
+        cms["beta"] = cell.beta
+        cms["tau"] = cell.tau
         cms.to_csv(paths["result"])
 
     def _build_system(self, simbox, cell_config):

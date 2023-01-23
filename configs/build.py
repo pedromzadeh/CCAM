@@ -26,7 +26,7 @@ default_dict = {
     "lam": [0.8],
     "N_wetting": [500],
     "alpha": [80],
-    "tau_mp": [0.1],
+    "tau_mp": [0.05],
     "id": [0],
     "polarity_mode": [str(pol_type).upper()],
 }

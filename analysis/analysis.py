@@ -854,3 +854,33 @@ def _ffcr_det_sol(theta_cr, ax=None, lb=None, plot_legend=False):
             ax.legend(loc=(1.1, 0.001))
 
     return t_dprime * REAL_UNITS_TIME
+
+
+def position_dist(data, mu_factor, cmap=None):
+    from substrate.substrates import Substrate
+
+    sub_generator = Substrate(N_mesh=200, L_box=50)
+    chi = sub_generator.two_state_sub()
+
+    fig, axs = plt.subplots(3, 3, figsize=(10, 5))
+
+    x, y = np.meshgrid([0, 1, 2], [0, 1, 2])
+
+    for i, j, df in zip(x.flatten(), y.flatten(), data):
+        beta = df.beta.iloc[0]
+        tau = df.tau.iloc[0]
+        D = df.D.iloc[0]
+        axs[i, j].set_title(rf"$\beta$ = {beta}, $\tau$ = {tau}, $D$ = {D}")
+        axs[i, j].contour(
+            chi,
+            levels=[0.5],
+            colors=["black"],
+            linewidths=[3],
+            extent=[0, 50 * mu_factor, 0, 50 * mu_factor],
+        )
+        axs[i, j].scatter(df.x, df.y, color="orange", s=3)
+        axs[i, j].axis("off")
+    axs[2, 2].remove()
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=0, wspace=2)
+    plt.show()

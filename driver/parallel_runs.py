@@ -8,10 +8,11 @@ pol_type = "IM"
 
 # define a simulator object
 simulator = Simulator()
-n_workers = 1
+n_workers = 48
 
 # run a total of n_workers simulations
-for batch_id in range(1):
+n_batches = 24
+for batch_id in range(n_batches):
     processes = [
         multiprocessing.Process(
             target=simulator.execute,

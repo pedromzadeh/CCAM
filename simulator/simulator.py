@@ -79,11 +79,13 @@ class Simulator:
 
             # collect statistics
             if n % simbox.n_stats == 0 and self._cell_whole(cell):
+                time = n * cell.simbox.dt * 8 / 60  # time in hr
                 cms = pd.concat(
                     [
                         cms,
                         pd.DataFrame(
-                            [[*cell.cm[1], *cell.v_cm]], columns=["x", "y", "vx", "vy"]
+                            [[*cell.cm[1], *cell.v_cm, time]],
+                            columns=["x", "y", "vx", "vy", "time[hr]"],
                         ),
                     ]
                 )

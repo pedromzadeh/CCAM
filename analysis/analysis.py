@@ -444,7 +444,7 @@ def calc_v_a_from_position(x, dt):
     return pd.DataFrame(res.T, columns=["x", "v", "a"])
 
 
-def map_a(binned_df, nbins, x1bin_lbl, x2bin_lbl):
+def map_a(binned_df, nbins, x1bin_lbl, x2bin_lbl, min_pts):
 
     acc_map = np.empty(shape=(nbins, nbins))
     acc_map[:] = np.nan
@@ -452,6 +452,8 @@ def map_a(binned_df, nbins, x1bin_lbl, x2bin_lbl):
     # x1 is along the x-axis
     # x2 is along the y-axis
     for (j, i), df in binned_df.groupby([x1bin_lbl, x2bin_lbl]):
+        if len(df.a) < min_pts:
+            continue
         acc_map[i, j] = df.a.mean()
 
     return acc_map

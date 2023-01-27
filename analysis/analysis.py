@@ -433,10 +433,10 @@ def calc_v_a_from_position(x, dt):
     """
 
     def _calc_v():
-        return np.diff(x) / dt
+        return np.diff(x) / np.diff(dt)
 
     def _calc_a():
-        return np.diff(v) / dt
+        return np.diff(v) / np.diff(dt[:-1])
 
     v = _calc_v()
     a = _calc_a()
@@ -550,7 +550,7 @@ def get_hopping_times(df, mu_factor):
     df = df.query("state != -1")
     swaps = np.diff(df.state)
     swap_inxs = np.where(swaps != 0)[0] + 1
-    times = df["timestamp[hr]"].iloc[swap_inxs].to_numpy()
+    times = df["time[hr]"].iloc[swap_inxs].to_numpy()
     hopping_times = np.diff(times, prepend=0)
     return hopping_times
 

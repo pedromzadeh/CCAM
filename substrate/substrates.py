@@ -180,7 +180,7 @@ class Substrate:
         chi = np.where(chi < 0.001, 0, chi)
         return chi
 
-    def two_state_sub(self, square_width=38, bridge_width=10, delta_centers=76):
+    def two_state_sub(self, square_width=38, bridge_width=10, delta_centers=73):
         """
         Returns a two-state (dumbell-shaped) micropattern, with inside = 0.
 

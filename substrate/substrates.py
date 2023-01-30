@@ -180,10 +180,25 @@ class Substrate:
         chi = np.where(chi < 0.001, 0, chi)
         return chi
 
-    def two_state_sub(self, square_width=10, bridge_width=5):
+    def two_state_sub(self, square_width=38, bridge_width=10, delta_centers=76):
+        """
+        Returns a two-state (dumbell-shaped) micropattern, with inside = 0.
+
+        Parameters
+        ----------
+        square_width : float, optional
+            Specifies the dimension of the basins in microns, by default 38
+        bridge_width : float, optional
+            Specifies the dimension of bridge opening in microns, by default 10
+        delta_centers : float, optional
+            Specifies the distance between two basin centers in microns, by default 76
+
+        Returns
+        -------
+        np.ndarray of shape (N_mesh, N_mesh)
+            The micropattern.
+        """
         # useful variables
-        sq_half_dim = square_width / 2
-        d = (square_width - bridge_width) / 2
         N_mesh = self.N_mesh
         L_box = self.L_box
         xi = self.xi
@@ -192,23 +207,21 @@ class Substrate:
         x, y = np.meshgrid(np.linspace(0, L_box, N_mesh), np.linspace(0, L_box, N_mesh))
 
         # index of the two squares, used for symmetric positioning
-        ind = [1, 3]
+        L_sqrd = square_width / (2 * 6)  # in PF.L & halved
+        delta = delta_centers / (2 * 6)  # in PF.L & halved
+        L_bridge = bridge_width / (2 * 6)  # in PF._bridge & halved
 
-        # build the bridge
-        xL = ind[0] * L_box / 4 - sq_half_dim + 1
-        xR = ind[1] * L_box / 4 + sq_half_dim - 1
-        yB, yT = L_box / 2 - sq_half_dim + d, L_box / 2 + sq_half_dim - d
-        chi_y = 0.5 * ((1 - np.tanh((y - yB) / xi)) + (1 + np.tanh((y - yT) / xi)))
-        chi_x = 0.5 * ((1 - np.tanh((x - xL) / xi)) + (1 + np.tanh((x - xR) / xi)))
-        bridge = chi_x + chi_y
-        bridge = np.where(bridge > 1, 1, bridge)
-
-        # build the two squares
+        # build the squares
         squares = None
         for k in range(2):
-            xL = ind[k] * L_box / 4 - sq_half_dim
-            xR = ind[k] * L_box / 4 + sq_half_dim
-            yB, yT = L_box / 2 - sq_half_dim, L_box / 2 + sq_half_dim
+            if k == 0:
+                center = L_box / 2 - delta
+            else:
+                center = L_box / 2 + delta
+
+            xL = center - L_sqrd
+            xR = center + L_sqrd
+            yB, yT = L_box / 2 - L_sqrd, L_box / 2 + L_sqrd
             chi_y = 0.5 * ((1 - np.tanh((y - yB) / xi)) + (1 + np.tanh((y - yT) / xi)))
             chi_x = 0.5 * ((1 - np.tanh((x - xL) / xi)) + (1 + np.tanh((x - xR) / xi)))
             chi = chi_x + chi_y
@@ -218,10 +231,17 @@ class Substrate:
             else:
                 squares += chi
 
-        # bridge + squares ==> two state substrate
-        # refactoring so range is [0, 1]
-        squares -= 1
-        two_state = squares + bridge - 1
-        two_state = np.where(two_state < 0, 0, two_state)
+        # build the bridge
+        xL = L_box / 2 - delta
+        xR = L_box / 2 + delta
+        yB, yT = L_box / 2 - L_bridge, L_box / 2 + L_bridge
+        chi_y = 0.5 * ((1 - np.tanh((y - yB) / xi)) + (1 + np.tanh((y - yT) / xi)))
+        chi_x = 0.5 * ((1 - np.tanh((x - xL) / xi)) + (1 + np.tanh((x - xR) / xi)))
+        chi = chi_x + chi_y
+        chi = np.where(chi > 1, 1, chi)
 
-        return two_state
+        # put squares and bridge together
+        mp = (squares - 1) + chi
+        mp -= 1
+        mp = np.where(mp < 0, 0, mp)
+        return mp

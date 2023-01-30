@@ -125,8 +125,8 @@ class Cell:
         self.rng = np.random.RandomState(seed=seed)
 
         # read cell hyperparameters from file
-        self._load_parameters(config_file)
         self.simbox = _sim_box_obj
+        self._load_parameters(config_file)
 
         # spatial features of the cell
         self.phi = self._create()
@@ -158,7 +158,11 @@ class Cell:
         return 1 / 2 + 1 / 2 * np.tanh(-(r - R) / epsilon)
 
     def _init_center(self):
-        centers = [[12.5, 25], [37.5, 25]]
+        d = 73 / (2 * 6)
+        x1 = self.simbox.L_box / 2 - d
+        x2 = self.simbox.L_box / 2 + d
+
+        centers = [[x1, 25], [x2, 25]]
         return centers[self.rng.randint(0, 2)]
 
     def _load_parameters(self, path):

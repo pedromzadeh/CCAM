@@ -97,6 +97,9 @@ class Figure:
             colors=["black"],
         )
 
+        plt.xlim([10, 40])
+        plt.ylim([10, 40])
+
         if path is not None:
             plt.savefig(path)
             plt.close()

@@ -95,7 +95,7 @@ class Simulator:
                 Figure.view_pol_field(
                     cell,
                     chi,
-                    dpi=75,
+                    dpi=150,
                     path=os.path.join(paths["figures"], f"img_{n}.png"),
                 )
 
@@ -148,7 +148,7 @@ class Simulator:
         buffer = sub_config["buffer"]
         sub = Substrate(N_mesh, L_box, xi)
         if kind == "two-state":
-            chi = sub.two_state_sub()
+            chi = sub.two_state_sub(bridge_width=20)
         elif kind == "rectangular":
             chi = sub.rectangular(
                 xL=buffer, xR=L_box - buffer, yB=buffer, yT=L_box - buffer

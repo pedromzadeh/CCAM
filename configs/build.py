@@ -14,13 +14,13 @@ N_cells = 1
 
 betas = np.linspace(0.6, 1.2, 2)
 taus = np.linspace(1, 5, 2)
-Ds = np.linspace(0.1, 0.2, 2)
+Ds = np.linspace(0.02, 0.15, 2)
 
 default_dict = {
-    "gamma": [1.8],
+    "gamma": [1.2],
     "A": [0],
-    "R_eq": [4],
-    "R_init": [4],
+    "R_eq": [2.7],
+    "R_init": [2.7],
     "eta": [0.5],
     "g": [0],
     "lam": [0.8],

@@ -8,4 +8,4 @@ pol_type = "IM"
 
 # define a simulator object
 simulator = Simulator()
-simulator.execute(0, grid_id, pol_type, 100)
+simulator.execute(0, grid_id, pol_type, None)

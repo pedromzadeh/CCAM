@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 
 class Figure:
@@ -78,7 +79,10 @@ class Figure:
         plt.imshow(
             p_field_masked, extent=[0, L_box, 0, L_box], origin="lower", cmap="coolwarm"
         )
-        cbar = plt.colorbar()
+        # cbar = plt.colorbar()
+        cbar = plt.colorbar(
+            format=FuncFormatter(lambda x, pos: "{:.2f}".format(x)), pad=0.2, shrink=0.8
+        )
         cbar.set_label(r"$\mathbb{P}\equiv \phi \rho$")
         plt.contour(
             phi,

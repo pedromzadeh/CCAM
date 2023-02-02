@@ -12,12 +12,13 @@ N_cells = 1
 #   - tau   : timescale of pol field decay
 #   - D     : magnitude of noise
 
-betas = np.linspace(0.6, 1.2, 2)
-taus = np.linspace(1, 5, 2)
-Ds = np.linspace(0.02, 0.15, 2)
+betas = np.linspace(0.6, 2, 2)
+# taus = np.linspace(1, 5, 2)
+gammas = np.linspace(1, 2, 2)
+Ds = np.linspace(0.0, 0.1, 2)
 
 default_dict = {
-    "gamma": [1.2],
+    # "gamma": [1.2],
     "A": [0],
     "R_eq": [2.7],
     "R_init": [2.7],
@@ -26,6 +27,7 @@ default_dict = {
     "lam": [0.8],
     "N_wetting": [500],
     "alpha": [80],
+    "tau" : [5],
     "tau_mp": [0.05],
     "id": [0],
     "polarity_mode": [str(pol_type).upper()],
@@ -33,13 +35,13 @@ default_dict = {
 
 param_grid = {
     "beta": list(map(float, betas)),
-    "tau": list(map(float, taus)),
+    "gamma": list(map(float, gammas)),
     "D": list(map(float, Ds)),
 } | default_dict
 
 grid = list(ParameterGrid(param_grid))
 
-print(f"betas: {betas} \ntaus: {taus}\nDs: {Ds}\n")
+print(f"betas: {betas} \ngammas: {gammas}\nDs: {Ds}\n")
 print(f"Total # of configs: {len(grid)}")
 
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{pol_type}")

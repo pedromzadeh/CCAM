@@ -520,7 +520,7 @@ def view_position_dist(cms, mu_factor, cmap=None):
     plt.show()
 
 
-def get_hopping_times(df, mu_factor):
+def get_hopping_times(df, xL, xR, buffer):
     """
     Return hopping times present in given input in hours.
 
@@ -528,6 +528,12 @@ def get_hopping_times(df, mu_factor):
     ----------
     df : pd.DataFrame
         Time series of positions, in microns.
+
+    xL, xR : float
+        Centroids of the two basins, in microns.
+
+    buffer : float
+        Tolerance away from basin centroid to count inside the basin, in microns.
 
     mu_factor : float
         Specifies conversion factor between simulation
@@ -540,10 +546,10 @@ def get_hopping_times(df, mu_factor):
     """
     # returns hopping times for this run in hours
     def _state(x):
-        x /= mu_factor
-        if np.fabs(x - 12.5) < 5:
+        # x /= mu_factor
+        if np.fabs(x - xL) < buffer:
             return 0
-        elif np.fabs(x - 37.5) < 5:
+        elif np.fabs(x - xR) < buffer:
             return 1
         else:
             return -1
@@ -864,7 +870,7 @@ def position_dist(data, mu_factor, cmap=None):
     sub_generator = Substrate(N_mesh=200, L_box=50)
     chi = sub_generator.two_state_sub()
 
-    fig, axs = plt.subplots(3, 3, figsize=(10, 5))
+    fig, axs = plt.subplots(3, 3, figsize=(5, 5), dpi=200)
 
     x, y = np.meshgrid([0, 1, 2], [0, 1, 2])
 
@@ -872,7 +878,10 @@ def position_dist(data, mu_factor, cmap=None):
         beta = df.beta.iloc[0]
         tau = df.tau.iloc[0]
         D = df.D.iloc[0]
-        axs[i, j].set_title(rf"$\beta$ = {beta}, $\tau$ = {tau}, $D$ = {D}")
+        gid = df.gid.iloc[0]
+        axs[i, j].set_title(
+            rf"$\beta$ = {beta}, $\tau$ = {tau}, $D$ = {D}" "\n" f"[{gid}]"
+        )
         axs[i, j].contour(
             chi,
             levels=[0.5],
@@ -882,7 +891,108 @@ def position_dist(data, mu_factor, cmap=None):
         )
         axs[i, j].scatter(df.x, df.y, color="orange", s=3)
         axs[i, j].axis("off")
+        axs[i, j].set_xlim([15 * mu_factor, 35 * mu_factor])
+        axs[i, j].set_ylim([15 * mu_factor, 35 * mu_factor])
+
     axs[2, 2].remove()
     plt.tight_layout()
-    plt.subplots_adjust(hspace=0, wspace=2)
+    plt.subplots_adjust(hspace=0.5, wspace=0.5)
     plt.show()
+
+
+def streamplot(acc_map, ax, bounds, nbins, init_cond=False, n_skip=None, one_side=None):
+    xmin, xmax, vmin, vmax = bounds
+    midpoint = (xmax + xmin) / 2
+    buffer = 0.5
+    X, Y = np.meshgrid(
+        np.linspace(xmin + buffer, xmax - buffer, nbins),
+        np.linspace(vmin + buffer, vmax - buffer, nbins),
+    )
+
+    ax.streamplot(
+        X,
+        Y,
+        Y,
+        acc_map,
+        linewidth=0.5,
+        integration_direction="forward",
+        color="gainsboro",
+        density=2,
+    )
+
+    if init_cond:
+        fig_temp, ax_temp = plt.subplots(1, 1)
+        filled_indx = np.where(acc_map != np.nan)
+        x, y = X[0][filled_indx[1]], Y[:, 0][filled_indx[0]]
+
+        if n_skip is not None:
+            x, y = x[::n_skip], y[::n_skip]
+
+        for xx, yy in zip(x, y):
+            stream = ax_temp.streamplot(
+                X,
+                Y,
+                Y,
+                acc_map,
+                start_points=[[xx, yy]],
+                integration_direction="forward",
+                broken_streamlines=False,
+            )
+            traj = np.array(stream.lines.get_segments())
+
+            if len(traj) == 0:
+                continue
+
+            flag = traj[-1][-1][0] < midpoint
+            if flag:
+                color = "red"
+            else:
+                color = "blue"
+
+            if one_side is not None:
+                if color == one_side:
+                    ax.streamplot(
+                        X,
+                        Y,
+                        Y,
+                        acc_map,
+                        linewidth=0.5,
+                        start_points=[[xx, yy]],
+                        integration_direction="forward",
+                        color=color,
+                        broken_streamlines=False,
+                    )
+                else:
+                    continue
+            else:
+                ax.streamplot(
+                    X,
+                    Y,
+                    Y,
+                    acc_map,
+                    linewidth=0.5,
+                    start_points=[[xx, yy]],
+                    integration_direction="forward",
+                    color=color,
+                    broken_streamlines=False,
+                )
+        plt.close(fig_temp)
+
+
+def map_imshow(acc_map, ax, bounds, nbins, cbar=False):
+    xmin, xmax, vmin, vmax = bounds
+
+    im = ax.imshow(acc_map, origin="lower", interpolation="none", cmap="rainbow")
+    ax.set_xticks(
+        [0, nbins // 2, nbins],
+        [round(xmin, 2), round((xmin + xmax) / 2, 2), round(xmax, 2)],
+    )
+    ax.set_yticks(
+        [0, nbins // 2, nbins],
+        [round(vmin, 2), round((vmin + vmax) / 2, 0), round(vmax, 2)],
+    )
+    if cbar:
+        cbar = ax.gcf().colorbar(im, ax=ax)
+        cbar.set_label(r"$F$ ($\mu$m/hr$^2$)")
+        ax.set_xlabel(r"$x$ ($\mu$m)")
+        ax.set_ylabel(r"$v$ ($\mu$m/hr)")

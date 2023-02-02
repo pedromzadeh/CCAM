@@ -4,7 +4,7 @@ from glob import glob
 
 
 rid = [0]
-for grid_id in [0]:
+for grid_id in [7]:
     for run_id in rid:
         root = f"../output/IM/grid_id{grid_id}/run_{run_id}/visuals"
         files = glob(os.path.join(root, "*.png"))

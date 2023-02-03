@@ -12,10 +12,10 @@ N_cells = 1
 #   - tau   : timescale of pol field decay
 #   - D     : magnitude of noise
 
-betas = np.linspace(0.6, 1.8, 2)
+betas = np.linspace(1.0, 1.6, 2)
 # taus = np.linspace(1, 5, 2)
 gammas = np.linspace(0.9, 1.8, 2)
-Ds = np.linspace(0.0, 0.1, 2)
+Ds = np.linspace(0.01, 0.1, 2)
 
 default_dict = {
     # "gamma": [1.2],
@@ -27,7 +27,7 @@ default_dict = {
     "lam": [0.8],
     "N_wetting": [500],
     "alpha": [80],
-    "tau" : [5],
+    "tau": [5],
     "tau_mp": [0.05],
     "id": [0],
     "polarity_mode": [str(pol_type).upper()],

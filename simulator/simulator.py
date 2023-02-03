@@ -95,7 +95,7 @@ class Simulator:
                 Figure.view_pol_field(
                     cell,
                     chi,
-                    dpi=150,
+                    dpi=75,
                     path=os.path.join(paths["figures"], f"img_{n}.png"),
                 )
 
@@ -110,6 +110,8 @@ class Simulator:
         cms["D"] = cell.D
         cms["beta"] = cell.beta
         cms["tau"] = cell.tau
+        cms["gamma"] = cell.gamma
+        cms["Req"] = cell.R_eq
         cms.to_csv(paths["result"])
 
     def _build_system(self, simbox, cell_config, cell_rng_seed):

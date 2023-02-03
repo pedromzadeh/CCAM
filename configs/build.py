@@ -14,8 +14,8 @@ N_cells = 1
 
 betas = np.linspace(1.0, 1.6, 2)
 # taus = np.linspace(1, 5, 2)
-gammas = np.linspace(0.9, 1.8, 2)
-Ds = np.linspace(0.01, 0.1, 2)
+gammas = np.linspace(1.0, 1.8, 2)
+Ds = np.linspace(0.02, 0.1, 2)
 
 default_dict = {
     # "gamma": [1.2],

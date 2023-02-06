@@ -876,11 +876,11 @@ def position_dist(data, mu_factor, cmap=None):
 
     for i, j, df in zip(x.flatten(), y.flatten(), data):
         beta = df.beta.iloc[0]
-        tau = df.tau.iloc[0]
+        gamma = df.gamma.iloc[0]
         D = df.D.iloc[0]
         gid = df.gid.iloc[0]
         axs[i, j].set_title(
-            rf"$\beta$ = {beta}, $\tau$ = {tau}, $D$ = {D}" "\n" f"[{gid}]"
+            rf"$\beta$ = {beta}, $\gamma$ = {gamma}, $D$ = {D}" "\n" f"[{gid}]"
         )
         axs[i, j].contour(
             chi,
@@ -929,16 +929,20 @@ def streamplot(acc_map, ax, bounds, nbins, init_cond=False, n_skip=None, one_sid
             x, y = x[::n_skip], y[::n_skip]
 
         for xx, yy in zip(x, y):
-            stream = ax_temp.streamplot(
-                X,
-                Y,
-                Y,
-                acc_map,
-                start_points=[[xx, yy]],
-                integration_direction="forward",
-                broken_streamlines=False,
-            )
-            traj = np.array(stream.lines.get_segments())
+            try:
+                stream = ax_temp.streamplot(
+                    X,
+                    Y,
+                    Y,
+                    acc_map,
+                    start_points=[[xx, yy]],
+                    integration_direction="forward",
+                    broken_streamlines=False,
+                )
+                traj = np.array(stream.lines.get_segments())
+            except (ValueError):
+                print(f"Points {[xx, yy]} outside bounds.")
+                continue
 
             if len(traj) == 0:
                 continue

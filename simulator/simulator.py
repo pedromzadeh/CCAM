@@ -147,14 +147,12 @@ class Simulator:
         sub_config = simbox.sub_config
         xi = sub_config["xi"]
         kind = sub_config["kind"]
-        buffer = sub_config["buffer"]
+        # buffer = sub_config["buffer"]
         sub = Substrate(N_mesh, L_box, xi)
         if kind == "two-state":
             chi = sub.two_state_sub(bridge_width=20)
         elif kind == "rectangular":
-            chi = sub.rectangular(
-                xL=buffer, xR=L_box - buffer, yB=buffer, yT=L_box - buffer
-            )
+            chi = sub.rectangular()
         else:
             raise ValueError(f"{kind} for substrate is not understood.")
 

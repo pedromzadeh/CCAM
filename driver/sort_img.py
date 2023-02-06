@@ -4,7 +4,7 @@ from glob import glob
 
 
 rid = [0]
-for grid_id in [7]:
+for grid_id in range(8):
     for run_id in rid:
         root = f"../output/IM/grid_id{grid_id}/run_{run_id}/visuals"
         files = glob(os.path.join(root, "*.png"))
@@ -20,8 +20,11 @@ for grid_id in [7]:
             os.system(cmd)
 
         print(f"Making a movie for grid {grid_id} and run {run_id}...")
-        cmd = f"ffmpeg -i {root}/img_%d.png -b:v 4M -s 800x800 -pix_fmt yuv420p \
-            -filter:v 'setpts=PTS*4' {root}/mov.mp4 -y -hide_banner -loglevel fatal"
+        cmd = (
+            "ffmpeg -i"
+            f"{root}/img_%d.png -b:v 4M -s 600x600 -pix_fmt yuv420p"
+            f"mov_{run_id}_{grid_id}.mp4 -y -hide_banner -loglevel fatal"
+        )
         os.system(cmd)
 
 os.system("rm dump.txt")

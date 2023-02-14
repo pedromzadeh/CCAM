@@ -123,11 +123,16 @@ def get_hopping_times(df, xL, xR, buffer):
     return hopping_times
 
 
-def position_dist(data, mu_factor, cmap=None):
+def position_dist(data, mp_type, mu_factor, cmap=None):
     from substrate.substrates import Substrate
 
     sub_generator = Substrate(N_mesh=200, L_box=50)
-    chi = sub_generator.two_state_sub()
+    if mp_type == "two_state":
+        chi = sub_generator.two_state_sub()
+    elif mp_type == "rectangular":
+        chi = sub_generator.rectangular()
+    else:
+        raise KeyError(f"{mp_type} is not understood")
 
     fig, axs = plt.subplots(3, 3, figsize=(5, 5), dpi=200)
 

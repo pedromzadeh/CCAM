@@ -8,5 +8,5 @@
 #SBATCH -o %A_%a.out
 
 mkdir empty/
-rsync -a --delete empty/ output/
+rsync -a --delete empty/ ../output/
 rm -r empty/
